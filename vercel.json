@@ -1,11 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build:vercel",
   "installCommand": "npm install",
-  "framework": "vite",
-  "ignoreCommand": "echo 'Skipping type checking for deployment'",
-  "functions": {
-    "src/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  "framework": "vite"
 }
