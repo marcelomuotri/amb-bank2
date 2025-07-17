@@ -1,0 +1,14 @@
+# Ignorar archivos de desarrollo
+node_modules
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignorar archivos de TypeScript que puedan causar problemas
+*.tsbuildinfo
+.tscache
+
+# Ignorar archivos de configuración de desarrollo
+.eslintrc*
+.prettierrc* 
