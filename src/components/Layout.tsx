@@ -6,7 +6,8 @@ import { useTranslation } from "react-i18next";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SearchIcon from "@mui/icons-material/Search";
 import LogoutIcon from "@mui/icons-material/Logout";
-import logo from "../assets/bird.png";
+// Logo URL - puedes cambiar esta URL por cualquier otra que prefieras
+const logoUrl = "https://cdn-icons-png.flaticon.com/512/2830/2830282.png";
 import { useNavigate } from "react-router-dom";
 import { supabase } from '../../supaconfig'
 import { useAuth } from '../hooks/useAuth';
@@ -53,7 +54,7 @@ const Layout = () => {
         <Box display="flex" flexDirection="column" height="98%" >
           <Menu>
             <MenuItem>
-              <img src={logo} style={{ width: 70, height: 70 }} alt="logo" />
+              <img src={logoUrl} style={{ width: 30, height: 30 }} alt="logo" />
             </MenuItem>
             <MenuItem icon={<FileUploadIcon />} onClick={() => navigate('/')}>{t('layout.uploadFiles')}</MenuItem>
             <MenuItem icon={<SearchIcon />} onClick={() => navigate('/search')}>{t('layout.searchClients')}</MenuItem>

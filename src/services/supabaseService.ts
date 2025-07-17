@@ -34,9 +34,10 @@ export const uploadFilesToWebhook = async (
       const renamedFile = new File([file], newFileName, { type: file.type });
       formData.append('file', renamedFile);
     });
-    
+    // Mockear el client momentáneamente para que siempre sea 1
+    client = "1";
     // Agregar cliente
-    formData.append('client', client);
+    formData.append('client_id', client);
 
     const response = await fetch(`https://ambolt-studio.up.railway.app/webhook/send-files`, {
       method: 'POST',
@@ -82,10 +83,8 @@ export const pollBatchStatus = async (batchId: string): Promise<BatchTransaction
 export const isBatchCompleted = (batchData: BatchTransaction | null): boolean => {
   if (!batchData) return false;
   
-  // Verificar diferentes posibles estados de "completado"
-  return batchData.status === 'done' || 
-         batchData.status === 'completed' || 
-         batchData.status === 'finished';
+  // Solo verificar el estado "success"
+  return batchData.status === 'success';
 };
 
 // Función para iniciar el proceso completo de polling
