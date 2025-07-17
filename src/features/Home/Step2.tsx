@@ -111,8 +111,7 @@ const Step2 = () => {
         { id: 103, date: '2024-04-12', checkNumber: '2222', details: 'Test Check 2222', credit: 0, debit: 2222.22, balance: 222222.22, account: 'Test Account', accountType: 'Test', bank: 'Test Bank' },
     ]);
     
-    const handleRowUpdate = (newRow: TableRowData, oldRow: TableRowData) => {
-      console.log('Row updated:', { newRow, oldRow });
+    const handleRowUpdate = (newRow: TableRowData) => {
       // Actualizar el estado local con la fila modificada
       setRows(prevRows => 
         prevRows.map(row => 

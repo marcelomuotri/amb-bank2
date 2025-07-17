@@ -18,7 +18,7 @@ export interface TableRowData {
 // Configuración base de columnas comunes
 export const baseColumns: ColumnDef<TableRowData>[] = [
   {
-    id: '1',
+    id: 'date',
     header: 'DATE',
     accessorKey: 'date',
     size: 8, // 8% del ancho total
@@ -28,19 +28,19 @@ export const baseColumns: ColumnDef<TableRowData>[] = [
     },
   },
   {
-    id: '2',
+    id: 'checkNumber',
     header: 'CHECK NO.',
     accessorKey: 'checkNumber',
     size: 5, // 5% del ancho total
   },
   {
-    id: '3',
+    id: 'details',
     header: 'DETAILS',
     accessorKey: 'details',
     size: 36, // 36% del ancho total (más ancho para texto largo)
   },
   {
-    id: '4',
+    id: 'credit',
     header: 'CREDIT',
     accessorKey: 'credit',
     size: 10, // 10% del ancho total
@@ -50,7 +50,7 @@ export const baseColumns: ColumnDef<TableRowData>[] = [
     },
   },
   {
-    id: '5',
+    id: 'debit',
     header: 'DEBIT',
     accessorKey: 'debit',
     size: 7, // 7% del ancho total
@@ -60,7 +60,7 @@ export const baseColumns: ColumnDef<TableRowData>[] = [
     },
   },
   {
-    id: '6',
+    id: 'balance',
     header: 'BALANCE',
     accessorKey: 'balance',
     size: 7, // 7% del ancho total
@@ -70,19 +70,19 @@ export const baseColumns: ColumnDef<TableRowData>[] = [
     },
   },
   {
-    id: '7',
+    id: 'account',
     header: 'ACCOUNT',
     accessorKey: 'account',
     size: 12, // 12% del ancho total
   },
   {
-    id: '8',
+    id: 'accountType',
     header: 'ACCOUNT TYPE',
     accessorKey: 'accountType',
     size: 12, // 12% del ancho total
   },
   {
-    id: '9',
+    id: 'bank',
     header: 'BANK',
     accessorKey: 'bank',
     size: 13, // 13% del ancho total
@@ -92,7 +92,7 @@ export const baseColumns: ColumnDef<TableRowData>[] = [
 // Columnas para la tabla de búsqueda (editables + columna cliente)
 export const searchColumns: ColumnDef<TableRowData>[] = [
   {
-    id: '0',
+    id: 'client',
     header: 'CLIENT',
     accessorKey: 'client',
     size: 8, // 8% del ancho total

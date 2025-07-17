@@ -36,7 +36,7 @@ import FSelect from './FSelect';
 
 // Tipos
 interface TableData {
-  [key: string]: any;
+  [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 interface SimpleTableProps<TData extends TableData = TableData> {
@@ -421,7 +421,7 @@ export default function SimpleTable<TData extends TableData = TableData>({
     
     // Convertir el valor según el tipo de campo
     let processedValue: string | number = editingValue;
-    const isNumericField = ['credito', 'debito', 'saldo'].includes(editingCell.columnId);
+    const isNumericField = ['credit', 'debit', 'balance'].includes(editingCell.columnId);
     
     if (isNumericField && editingValue !== '') {
       processedValue = parseFloat(editingValue);
@@ -443,7 +443,9 @@ export default function SimpleTable<TData extends TableData = TableData>({
   };
 
   // Memoizar la validación numérica
-  const numericFields = useMemo(() => new Set(['credito', 'debito', 'saldo']), []);
+  const numericFields = useMemo(() => new Set(['credit', 'debit', 'balance']), []);
+  
+
   
   // Función optimizada para validar números
   const validateNumericInput = useCallback((value: string) => {
