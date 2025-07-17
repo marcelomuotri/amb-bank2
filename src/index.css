@@ -5,5 +5,18 @@ body {
     -apple-system,
     system-ui,
     sans-serif;
-  background-color: #f8f8fa;
+  background-color: #dddde0;
+}
+
+/* Forzar border radius en DataGrid */
+.MuiDataGrid-root {
+  border-radius: 0px !important;
+}
+
+.MuiDataGrid-root.MuiDataGrid-root--densityStandard {
+  border-radius: 0px !important;
+}
+
+.MuiDataGrid-root.MuiDataGrid-root--densityStandard.MuiDataGrid-withBorderColor {
+  border-radius: 0px !important;
 }

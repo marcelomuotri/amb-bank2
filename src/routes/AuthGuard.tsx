@@ -1,19 +1,14 @@
-import { useLocation, Navigate, Outlet } from 'react-router-dom'
-//import { useSelector } from 'react-redux'
-//import { RootState } from '../framework/state/store'
+import { useLocation, Navigate } from 'react-router-dom'
 import { Box } from '@mui/material'
-//import { useAuthService } from '../framework/state/services/authService'
-//import Loader from '../components/Loader'
+import Layout from '../components/Layout'
+import { useAuth } from '../hooks/useAuth'
 
 const AuthGuard = () => {
   const location = useLocation()
- // const { user, loading } = useSelector((state: RootState) => state.auth)
-  //useAuthService()
+  const { user, loading } = useAuth()
 
-  //const isAuthenticated = !!user
-
-  const loading = false
-  const isAuthenticated = true
+  const isAuthenticated = !!user
+  //const isAuthenticated = true
 
   if (loading) {
     return (
@@ -22,11 +17,12 @@ const AuthGuard = () => {
       </Box>
     )
   }
+  
   if (!isAuthenticated) {   
     return <Navigate to='/login' state={{ from: location }} />
   }
 
-  return <Outlet />
+  return <Layout />
 }
 
 export default AuthGuard

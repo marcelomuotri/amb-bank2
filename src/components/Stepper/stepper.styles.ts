@@ -7,7 +7,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     background: 'white',
     display: 'flex',
     justifyContent: 'space-between',
-    borderRadius: '8px',
+    //borderRadius: '8px',
     alignItems: 'center',
     marginBottom: 24,
   },

@@ -178,9 +178,26 @@ export const appComponents: Components<Omit<Theme, 'components'>> = {
   },
   MuiSelect: {
     styleOverrides: {
+      root: {
+        '&.MuiOutlinedInput-root': {
+          borderColor: '#DEE0E3!important',
+          borderRadius: "8px!important",
+          border: "none!important"
+        },
+        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+          borderColor:  '#DEE0E3!important',
+        },
+        '&.Mui-focused': {
+          border: 'none!important',
+        },
+      },
       icon: {
         color: theme.palette.text.primary,
       },
+      select: {
+        padding: 0
+      },
+      
     },
   },
 }

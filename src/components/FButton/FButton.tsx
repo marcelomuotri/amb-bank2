@@ -57,7 +57,7 @@ const FButton = ({
         <Box sx={{ display: 'flex', gap: 6 }}>
           <Typography
             variant={'bodyRegular'}
-            className={`${styles.title} ${props.disabled || props.loading ? styles.disabled : ''} ${props.textClassName || ''}`}
+            className={`${styles.title} ${props.textClassName || ''}`}
           >
             {props.title}
           </Typography>
@@ -66,7 +66,7 @@ const FButton = ({
       ) : props.title ? (
         <Typography
           variant={'bodyRegular'}
-          className={`${styles.title} ${props.disabled || props.loading ? styles.disabled : ''} ${props.textClassName || ''}`}
+          className={`${styles.title} ${props.textClassName || ''}`}
         >
           {props.title}
         </Typography>

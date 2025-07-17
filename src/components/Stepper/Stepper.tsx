@@ -2,12 +2,14 @@ import { Box, Button, Typography } from '@mui/material'
 import { useStyles } from './stepper.styles'
 import FButton from '../FButton/FButton'
 import DownloadIcon from "../../assets/DownloadIcon"
+import { useTranslation } from 'react-i18next'
 
 interface StepperProps {
   activeStep: number
   onNextStep: () => void
   isStepperLoading: boolean
   stepperButtonDisabled: boolean
+  currentStep?: string
 }
 
 const Stepper = ({
@@ -15,13 +17,14 @@ const Stepper = ({
   onNextStep,
   isStepperLoading,
   stepperButtonDisabled,
+  currentStep,
 }: StepperProps) => {
+  const { t } = useTranslation()
   const { classes: styles } = useStyles()
 
   const steps = [
-    { label: "Subida" },
-    { label: "Clasificación" },
-    { label: "Descarga" },
+    { label: t('upload') },
+    { label: t('clasify') },
   ]
 
   return (
@@ -47,10 +50,16 @@ const Stepper = ({
         })}
       </Box>
       <FButton
-        endIcon={activeStep === 4 && <DownloadIcon />}
+        endIcon={activeStep === 3 ? <DownloadIcon /> : undefined}
         disabled={stepperButtonDisabled}
         onClick={onNextStep}
-        title={activeStep === 4 ? "Descargar" : "Continuar"}
+        title={
+          activeStep === 3 
+            ? t('stepper.download') 
+            : currentStep === 'step2' 
+              ? t('stepper.continueAndDownload')
+              : t('stepper.continue')
+        }
         loading={isStepperLoading}
         size={'small'}
         textClassName={styles.continueButton}
