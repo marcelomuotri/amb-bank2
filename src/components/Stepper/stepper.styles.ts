@@ -28,7 +28,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 4,
-    color: theme.palette.common.blue,
+    color: theme.palette.primary.main,
     transition: 'color 0.6s ease-in-out',
   },
   active: {
@@ -42,7 +42,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     width: 81,
     height: 8,
     borderRadius: 12,
-    backgroundColor: theme.palette.common.blue, // Color por defecto
+    backgroundColor: theme.palette.primary.main, // Color por defecto
   },
   activeConnector: {
     backgroundColor: theme.palette.primary.main, // Color cuando está activo

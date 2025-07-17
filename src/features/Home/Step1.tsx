@@ -70,7 +70,6 @@ const Step1 = forwardRef<Step1Ref, Step1Props>(({ onValidationChange, onBatchCom
       return false;
     }
 
-    setIsUploading(true);
     setUploadProgress('Iniciando proceso...');
 
     try {
@@ -90,7 +89,6 @@ const Step1 = forwardRef<Step1Ref, Step1Props>(({ onValidationChange, onBatchCom
       
       if (!batchId) {
         setUploadProgress('Error al subir archivos');
-        setIsUploading(false);
         return false;
       }
 
@@ -107,17 +105,14 @@ const Step1 = forwardRef<Step1Ref, Step1Props>(({ onValidationChange, onBatchCom
         (completedBatchId: string) => {
           setUploadProgress('¡Proceso completado!');
           onBatchComplete?.(completedBatchId);
-          setIsUploading(false);
         },
         // onError
         (error: string) => {
           setUploadProgress(`Error: ${error}`);
-          setIsUploading(false);
         },
         // onTimeout
         () => {
           setUploadProgress('Timeout: El proceso tardó demasiado');
-          setIsUploading(false);
         }
       );
 
@@ -126,7 +121,6 @@ const Step1 = forwardRef<Step1Ref, Step1Props>(({ onValidationChange, onBatchCom
     } catch (error) {
       console.error('Error en el proceso:', error);
       setUploadProgress('Error en el proceso: ' + error);
-      setIsUploading(false);
       return false;
     }
   };
