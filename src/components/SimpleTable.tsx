@@ -415,8 +415,8 @@ export default function SimpleTable<TData extends TableData = TableData>({
     setEditingCell({ rowId: row.id, columnId });
     setEditingValue(value?.toString() || '');
     
-    // Si es la columna account, abrir el select automáticamente
-    if (columnId === 'account') {
+    // Si es la columna account, accountType o bank, abrir el select automáticamente
+    if (columnId === 'account' || columnId === 'accountType' || columnId === 'bank') {
       setSelectOpen(true);
     }
   };
@@ -470,9 +470,36 @@ export default function SimpleTable<TData extends TableData = TableData>({
   
   // Opciones para el select de account
   const accountSelectOptions = useMemo(() => [
-    { label: 'Opción A', value: 'Opción A' },
-    { label: 'Opción B', value: 'Opción B' },
-    { label: 'Opción C', value: 'Opción C' },
+    { label: 'Advertising & Promotion', value: 'Advertising & Promotion' },
+    { label: 'Bank Services Charges', value: 'Bank Services Charges' },
+    { label: 'Computer & Internet', value: 'Computer & Internet' },
+    { label: 'Contractors', value: 'Contractors' },
+    { label: 'Insurance Expense', value: 'Insurance Expense' },
+    { label: 'Meals & Entertainment', value: 'Meals & Entertainment' },
+    { label: 'Membership & Dues', value: 'Membership & Dues' },
+    { label: 'Office Supplies', value: 'Office Supplies' },
+    { label: 'Parts Purchases', value: 'Parts Purchases' },
+    { label: 'Plates', value: 'Plates' },
+    { label: 'Rent Expense', value: 'Rent Expense' },
+    { label: 'Repairs & Maintenance', value: 'Repairs & Maintenance' },
+    { label: 'Sales', value: 'Sales' },
+    { label: 'Sales Commissions', value: 'Sales Commissions' },
+    { label: 'Shipping', value: 'Shipping' },
+    { label: 'Telephone Expense', value: 'Telephone Expense' },
+  ], []);
+
+  // Opciones para el select de accountType
+  const accountTypeSelectOptions = useMemo(() => [
+    { label: 'Cost of Goods Sold', value: 'Cost of Goods Sold' },
+    { label: 'Expense', value: 'Expense' },
+    { label: 'Income', value: 'Income' },
+    { label: 'Test', value: 'Test' },
+  ], []);
+
+  // Opciones para el select de bank
+  const bankSelectOptions = useMemo(() => [
+    { label: 'Test bank', value: 'Test bank' },
+    { label: 'Wells Fargo', value: 'Wells Fargo' },
   ], []);
   
 
@@ -490,6 +517,8 @@ export default function SimpleTable<TData extends TableData = TableData>({
       // Determinar el tipo de input basado en el campo
       const isNumericField = numericFields.has(cell.column.id);
       const isAccountField = cell.column.id === 'account';
+      const isAccountTypeField = cell.column.id === 'accountType';
+      const isBankField = cell.column.id === 'bank';
       
       // Si es la columna account, mostrar select
       if (isAccountField) {
@@ -523,6 +552,86 @@ export default function SimpleTable<TData extends TableData = TableData>({
             }}
           >
             {accountSelectOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        );
+      }
+      
+      // Si es la columna accountType, mostrar select
+      if (isAccountTypeField) {
+        return (
+          <Select
+            value={editingValue}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditingValue(value);
+              // Guardar inmediatamente con el valor seleccionado
+              saveCellWithValue(value);
+              setSelectOpen(false);
+            }}
+            open={selectOpen}
+            onOpen={() => setSelectOpen(true)}
+            onClose={() => setSelectOpen(false)}
+            size="small"
+            variant="standard"
+            autoFocus
+            sx={{
+              '& .MuiSelect-select': {
+                padding: '4px 8px',
+                fontSize: '14px',
+              },
+              '& .MuiInput-underline:before': {
+                borderBottom: 'none',
+              },
+              '& .MuiInput-underline:after': {
+                borderBottom: 'none',
+              },
+            }}
+          >
+            {accountTypeSelectOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        );
+      }
+      
+      // Si es la columna bank, mostrar select
+      if (isBankField) {
+        return (
+          <Select
+            value={editingValue}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditingValue(value);
+              // Guardar inmediatamente con el valor seleccionado
+              saveCellWithValue(value);
+              setSelectOpen(false);
+            }}
+            open={selectOpen}
+            onOpen={() => setSelectOpen(true)}
+            onClose={() => setSelectOpen(false)}
+            size="small"
+            variant="standard"
+            autoFocus
+            sx={{
+              '& .MuiSelect-select': {
+                padding: '4px 8px',
+                fontSize: '14px',
+              },
+              '& .MuiInput-underline:before': {
+                borderBottom: 'none',
+              },
+              '& .MuiInput-underline:after': {
+                borderBottom: 'none',
+              },
+            }}
+          >
+            {bankSelectOptions.map((option) => (
               <MenuItem key={option.value} value={option.value}>
                 {option.label}
               </MenuItem>
