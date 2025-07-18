@@ -25,6 +25,8 @@ import {
   Button,
   Menu,
   Chip,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -147,6 +149,7 @@ export default function SimpleTable<TData extends TableData = TableData>({
   const [globalFilter, setGlobalFilter] = useState('');
   const [editingCell, setEditingCell] = useState<{ rowId: string; columnId: string } | null>(null);
   const [editingValue, setEditingValue] = useState('');
+  const [selectOpen, setSelectOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
@@ -411,6 +414,11 @@ export default function SimpleTable<TData extends TableData = TableData>({
     const value = row.getValue(columnId);
     setEditingCell({ rowId: row.id, columnId });
     setEditingValue(value?.toString() || '');
+    
+    // Si es la columna account, abrir el select automáticamente
+    if (columnId === 'account') {
+      setSelectOpen(true);
+    }
   };
 
   const handleCellSave = () => {
@@ -437,13 +445,35 @@ export default function SimpleTable<TData extends TableData = TableData>({
     setEditingValue('');
   };
 
+  const saveCellWithValue = (value: string) => {
+    if (!editingCell || !onRowUpdate) return;
+    
+    const row = table.getRow(editingCell.rowId);
+    const oldRow = row.original;
+    
+    const newRow = { ...oldRow, [editingCell.columnId]: value };
+    
+    onRowUpdate(newRow, oldRow);
+    setEditingCell(null);
+    setEditingValue('');
+    setSelectOpen(false);
+  };
+
   const handleCellCancel = () => {
     setEditingCell(null);
     setEditingValue('');
+    setSelectOpen(false);
   };
 
   // Memoizar la validación numérica
   const numericFields = useMemo(() => new Set(['credit', 'debit', 'balance']), []);
+  
+  // Opciones para el select de account
+  const accountSelectOptions = useMemo(() => [
+    { label: 'Opción A', value: 'Opción A' },
+    { label: 'Opción B', value: 'Opción B' },
+    { label: 'Opción C', value: 'Opción C' },
+  ], []);
   
 
   
@@ -459,6 +489,47 @@ export default function SimpleTable<TData extends TableData = TableData>({
     if (isEditing) {
       // Determinar el tipo de input basado en el campo
       const isNumericField = numericFields.has(cell.column.id);
+      const isAccountField = cell.column.id === 'account';
+      
+      // Si es la columna account, mostrar select
+      if (isAccountField) {
+        return (
+          <Select
+            value={editingValue}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditingValue(value);
+              // Guardar inmediatamente con el valor seleccionado
+              saveCellWithValue(value);
+              setSelectOpen(false);
+            }}
+            open={selectOpen}
+            onOpen={() => setSelectOpen(true)}
+            onClose={() => setSelectOpen(false)}
+            size="small"
+            variant="standard"
+            autoFocus
+            sx={{
+              '& .MuiSelect-select': {
+                padding: '4px 8px',
+                fontSize: '14px',
+              },
+              '& .MuiInput-underline:before': {
+                borderBottom: 'none',
+              },
+              '& .MuiInput-underline:after': {
+                borderBottom: 'none',
+              },
+            }}
+          >
+            {accountSelectOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        );
+      }
       
       return (
         <TextField
