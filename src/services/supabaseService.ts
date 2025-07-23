@@ -1,4 +1,6 @@
 import { supabase } from '../../supaconfig';
+import { Client } from '../types/supabaseTypes';
+import { Bank } from '../types/supabaseTypes';
 
 // Tipos para las respuestas
 export interface BatchTransaction {
@@ -12,6 +14,26 @@ export interface WebhookResponse {
   batch_id: string;
   status: string;
   message?: string;
+}
+
+// Tipo para los datos de transacción del webhook
+export interface WebhookTransaction {
+  transaction_id: string;
+  date: string;
+  description: string;
+  credit_amount: number | null;
+  debit_amount: number | null;
+  balance: number | null;
+  subcategory: string;
+  category: string;
+  source: string;
+  client_id: number;
+}
+
+// Tipo para la respuesta del webhook
+export interface WebhookBatchResponse {
+  status: string;
+  data: WebhookTransaction[];
 }
 
 // Función para hacer POST al webhook
@@ -91,7 +113,7 @@ export const isBatchCompleted = (batchData: BatchTransaction | null): boolean =>
 export const startBatchPolling = (
   batchId: string,
   onProgress: (message: string) => void,
-  onComplete: (batchId: string) => void,
+  onComplete: (batchData: BatchTransaction | null) => void,
   onError: (error: string) => void,
   onTimeout: () => void
 ): (() => void) => {
@@ -107,8 +129,8 @@ export const startBatchPolling = (
       if (isBatchCompleted(batchData)) {
         clearInterval(pollInterval);
         onProgress('¡Proceso completado!');
-        onComplete(batchId);
-        return;
+        onComplete(batchData);
+        return batchData;
       }
       
       onProgress(`Procesando... (intento ${pollCount}/${maxPolls})`);
@@ -145,6 +167,157 @@ export const getBatchTransactions = async (batchId: string): Promise<BatchTransa
     
   } catch (error) {
     console.error('Error obteniendo transacciones:', error);
+    throw error;
+  }
+}; 
+
+// Función para obtener todos los clientes de la tabla clients
+export const fetchClients = async (): Promise<Client[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*');
+    if (error) throw error;
+    return data as Client[];
+  } catch (error) {
+    console.error('Error fetching clients:', error);
+    throw error;
+  }
+}; 
+
+// Función para obtener todos los bancos de la tabla banks
+export const fetchBanks = async (): Promise<Bank[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('banks')
+      .select('*');
+    if (error) throw error;
+    return data as Bank[];
+  } catch (error) {
+    console.error('Error fetching banks:', error);
+    throw error;
+  }
+}; 
+
+// Función para actualizar una transacción específica
+export const updateTransaction = async (
+  transactionId: string,
+  columnName: string,
+  newValue: string | number
+): Promise<boolean> => {
+  console.log('transactionId', transactionId);
+  try {
+    const { error } = await supabase
+      .from('transactions')
+      .update({ [columnName]: newValue })
+      .eq('transaction_id', transactionId);
+    
+    if (error) {
+      console.error('Error actualizando transacción:', error);
+      throw error;
+    }
+    
+    console.log('Transacción actualizada exitosamente:', { transactionId, columnName, newValue });
+    return true;
+    
+  } catch (error) {
+    console.error('Error inesperado actualizando transacción:', error);
+    throw error;
+  }
+};
+
+// Función para eliminar una transacción específica
+export const deleteTransaction = async (transactionId: string): Promise<boolean> => {
+  console.log('Eliminando transacción:', transactionId);
+  try {
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('transaction_id', transactionId);
+    
+    if (error) {
+      console.error('Error eliminando transacción:', error);
+      throw error;
+    }
+    
+    console.log('Transacción eliminada exitosamente:', { transactionId });
+    return true;
+    
+  } catch (error) {
+    console.error('Error inesperado eliminando transacción:', error);
+    throw error;
+  }
+};
+
+// Función para eliminar múltiples transacciones
+export const deleteMultipleTransactions = async (transactionIds: string[]): Promise<boolean> => {
+  console.log('Eliminando transacciones:', transactionIds);
+  try {
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .in('transaction_id', transactionIds);
+    
+    if (error) {
+      console.error('Error eliminando transacciones:', error);
+      throw error;
+    }
+    
+    console.log('Transacciones eliminadas exitosamente:', { transactionIds });
+    return true;
+    
+  } catch (error) {
+    console.error('Error inesperado eliminando transacciones:', error);
+    throw error;
+  }
+};
+
+// Función para actualizar múltiples transacciones en bulk
+export const updateMultipleTransactions = async (
+  transactionIds: string[],
+  updates: { [key: string]: string | number }
+): Promise<boolean> => {
+  console.log('Actualizando transacciones en bulk:', { transactionIds, updates });
+  try {
+    const { error } = await supabase
+      .from('transactions')
+      .update(updates)
+      .in('transaction_id', transactionIds);
+    
+    if (error) {
+      console.error('Error actualizando transacciones en bulk:', error);
+      throw error;
+    }
+    
+    console.log('Transacciones actualizadas exitosamente en bulk:', { transactionIds, updates });
+    return true;
+    
+  } catch (error) {
+    console.error('Error inesperado actualizando transacciones en bulk:', error);
+    throw error;
+  }
+};
+
+// Función para buscar transacciones por cliente
+export const searchTransactionsByClient = async (clientId: number): Promise<any[]> => {
+  console.log('Buscando transacciones para cliente:', clientId);
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('date', { ascending: false });
+    
+    if (error) {
+      console.error('Error buscando transacciones:', error);
+      throw error;
+    }
+    
+    console.log('Transacciones encontradas:', data?.length || 0);
+    return data || [];
+    
+  } catch (error) {
+    console.error('Error inesperado buscando transacciones:', error);
     throw error;
   }
 }; 

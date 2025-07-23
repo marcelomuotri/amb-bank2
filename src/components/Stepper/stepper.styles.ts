@@ -28,7 +28,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 4,
-    color: theme.palette.primary.main,
+    color: '#9CA3AF', // Color gris para steps inactivos
     transition: 'color 0.6s ease-in-out',
   },
   active: {
@@ -42,7 +42,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     width: 81,
     height: 8,
     borderRadius: 12,
-    backgroundColor: theme.palette.primary.main, // Color por defecto
+    backgroundColor: '#E5E7EB', // Color gris para connectors inactivos
   },
   activeConnector: {
     backgroundColor: theme.palette.primary.main, // Color cuando está activo

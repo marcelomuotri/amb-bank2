@@ -1,60 +1,130 @@
-import { Box, Typography } from "@mui/material"
-import Stepper from "../../components/Stepper/Stepper"
-import { useState, useRef } from "react"
-import Step2 from "./Step2"
-import Step1, { Step1Ref } from "./Step1"
+import { Box } from "@mui/material";
+import Stepper from "../../components/Stepper/Stepper";
+import { useTranslation } from "react-i18next";
+import { useState } from "react";
+import Step2 from "./Step2";
+import Step1 from "./Step1";
+import {
+  startBatchPolling,
+  uploadFilesToWebhook,
+} from "../../services/supabaseService";
+import { useBanks } from "../../hooks/useBanks";
 
 const Home = () => {
-  const [activeStep, setActiveStep] = useState(1)
-  const step1Ref = useRef<Step1Ref>(null)
-  
+  const { t } = useTranslation();
+  const [activeStep, setActiveStep] = useState(1);
+  const [batchResult, setBatchResult] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [selectedClient, setSelectedClient] = useState<string | null>(null);
+  const [selectedBank, setSelectedBank] = useState<string | null>(null);
+  const [fileItems, setFileItems] = useState<any[]>([]);
+
+  const steps = [{ label: t("upload") }, { label: t("clasify") }];
+
+  const { banks, loading: banksLoading, error: banksError } = useBanks();
+
   const handleNextStep = async () => {
-    // Simplemente pasar al siguiente paso sin procesar archivos
-    setActiveStep(activeStep + 1)
-  }
-  
+    if (activeStep === 1) {
+      // Validar
+      if (!selectedClient || !selectedBank || fileItems.length === 0) {
+        alert("Por favor completa todos los campos y sube al menos un archivo");
+        return;
+      }
+
+      // Ir directamente al Step2
+      setActiveStep(activeStep + 1);
+      setIsProcessing(true);
+
+      try {
+        // 1. Subir archivos al webhook
+        const files = fileItems.map((item) => item.file);
+        const bankName = selectedBank;
+        const batchId = await uploadFilesToWebhook(
+          files,
+          selectedClient,
+          bankName
+        );
+        if (!batchId) {
+          setIsProcessing(false);
+          return;
+        }
+
+        // 2. Iniciar polling usando el servicio
+        startBatchPolling(
+          batchId,
+          () => {
+            // Los mensajes de progreso se manejarán en Step2 si es necesario
+          },
+          (result: any) => {
+            setBatchResult(result);
+            setIsProcessing(false);
+          },
+          () => {
+            setIsProcessing(false);
+          },
+          () => {
+            setIsProcessing(false);
+          }
+        );
+      } catch (error) {
+        setIsProcessing(false);
+      }
+    } else if (activeStep === 2) {
+      // En el paso 2, el botón "Continue and Download" debería descargar el archivo
+      // Por ahora, solo mostramos un mensaje o podemos implementar la descarga
+      console.log("Descargando archivo...");
+      // Aquí puedes implementar la lógica de descarga
+      // Por ejemplo: downloadFile(batchResult);
+    }
+  };
+  console.log("batchResult", batchResult);
+
   return (
     <Box>
-        
-        <Stepper 
+              <Stepper 
           activeStep={activeStep} 
           onNextStep={handleNextStep} 
           isStepperLoading={false} 
           stepperButtonDisabled={false}
-          currentStep={activeStep === 2 ? 'step2' : undefined}
+          currentStep={activeStep === 2 ? "step2" : undefined}
+          steps={steps}
+          buttonTitle={activeStep === 2 ? t("stepper.continueAndDownload") : t("stepper.continue")}
         />
-        
-        <Box sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '24px',
-        }}>
-          {activeStep === 1 && (
-            <Box>
-                <Step1 
-                  ref={step1Ref}
-                  onBatchComplete={(batchId) => {
-                    console.log('Batch completado:', batchId);
-                    // Aquí puedes agregar lógica adicional cuando se complete el batch
-                  }}
-                />
-            </Box>
-          )}
-          {activeStep === 2 && (
-            <Box>
-              <Step2 />
-            </Box>
-          )}
-          {activeStep === 3 && (
-            <Box>
-              <Typography>
-                Descargar archivo
-              </Typography>
-            </Box>
-          )}
-        </Box>
-    </Box>
-  )
-}
 
-export default Home
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "24px",
+        }}
+      >
+        {activeStep === 1 && (
+          <Box>
+            <Step1
+              selectedClient={selectedClient}
+              setSelectedClient={setSelectedClient}
+              selectedBank={selectedBank}
+              setSelectedBank={setSelectedBank}
+              fileItems={fileItems}
+              setFileItems={setFileItems}
+              banks={banks}
+              banksLoading={banksLoading}
+              banksError={banksError}
+            />
+          </Box>
+        )}
+        {activeStep === 2 && (
+          <Box>
+            <Step2
+              batchResult={batchResult}
+              isProcessing={isProcessing}
+              banks={banks}
+            />
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
+};
+
+export default Home;

@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { useDropzone, DropzoneOptions } from "react-dropzone";
 import { Box, Typography } from "@mui/material";
-import { v4 as uuidv4 } from "uuid";
 import { useTranslation } from "react-i18next";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
@@ -16,25 +15,19 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const { t } = useTranslation();
   const [isDragActive, setIsDragActive] = useState(false);
 
-  // Create unique file name
-  const createUniqueFile = useCallback((file: File): File => {
-    const uniqueFileName = `${uuidv4()}-${file.name}`;
-    return new File([file], uniqueFileName, { type: file.type });
-  }, []);
-
   // Handle file drop
   const onDrop = useCallback<NonNullable<DropzoneOptions["onDrop"]>>(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length === 0) return;
 
       try {
-        const uniqueFiles = acceptedFiles.map(file => createUniqueFile(file));
-        onFileSelect(uniqueFiles);
+        // No modificar el nombre del archivo aquí
+        onFileSelect(acceptedFiles);
       } catch (error) {
         console.error("Error processing dropped files:", error);
       }
     },
-    [onFileSelect, createUniqueFile]
+    [onFileSelect]
   );
 
   const { getRootProps, getInputProps } = useDropzone({ 

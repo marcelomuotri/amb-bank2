@@ -4,12 +4,18 @@ import FButton from '../FButton/FButton'
 import DownloadIcon from "../../assets/DownloadIcon"
 import { useTranslation } from 'react-i18next'
 
+interface Step {
+  label: string
+}
+
 interface StepperProps {
   activeStep: number
   onNextStep: () => void
   isStepperLoading: boolean
   stepperButtonDisabled: boolean
   currentStep?: string
+  steps: Step[]
+  buttonTitle: string
 }
 
 const Stepper = ({
@@ -18,23 +24,22 @@ const Stepper = ({
   isStepperLoading,
   stepperButtonDisabled,
   currentStep,
+  steps,
+  buttonTitle,
 }: StepperProps) => {
   const { t } = useTranslation()
   const { classes: styles } = useStyles()
-
-  const steps = [
-    { label: t('upload') },
-    { label: t('clasify') },
-  ]
 
   return (
     <Box className={styles.stepperContainer}>
       <Button className={styles.cancelButton}></Button>
       <Box className={styles.stepper}>
         {steps.map((step, index) => {
-          const isCompleted = index + 1 < activeStep
-          const isCurrent = index + 1 === activeStep
+          const stepNumber = index + 1
+          const isCompleted = stepNumber < activeStep
+          const isCurrent = stepNumber === activeStep
           const isActiveOrCompleted = isCompleted || isCurrent
+          
           return (
             <Box
               key={step.label}
@@ -50,16 +55,10 @@ const Stepper = ({
         })}
       </Box>
       <FButton
-        endIcon={activeStep === 3 ? <DownloadIcon /> : undefined}
+        endIcon={activeStep === 2 ? <DownloadIcon /> : undefined}
         disabled={stepperButtonDisabled}
         onClick={onNextStep}
-        title={
-          activeStep === 3 
-            ? t('stepper.download') 
-            : currentStep === 'step2' 
-              ? t('stepper.continueAndDownload')
-              : t('stepper.continue')
-        }
+        title={buttonTitle}
         loading={isStepperLoading}
         size={'small'}
         textClassName={styles.continueButton}
