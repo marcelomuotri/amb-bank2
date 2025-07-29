@@ -310,6 +310,7 @@ const ClientForm = () => {
               pagination={false}
               disableFilter={true}
               disableSearch={true}
+              t={t}
             />
           </Box>
           

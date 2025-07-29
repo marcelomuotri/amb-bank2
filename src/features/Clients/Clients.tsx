@@ -2,7 +2,6 @@ import { Box, Typography, Button, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";

@@ -70,6 +70,7 @@ interface SimpleTableProps<TData extends TableData = TableData> {
   disableFilter?: boolean;
   disableSearch?: boolean;
   banks?: Bank[];
+  t?: (key: string) => string;
 }
 
 // Estilos personalizados
@@ -166,10 +167,12 @@ export default function SimpleTable<TData extends TableData = TableData>({
   disableFilter = false,
   disableSearch = false,
   banks,
+  t: externalT,
 }: SimpleTableProps<TData>) {
   console.log("columns", columns);
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t: internalT } = useTranslation();
+  const t = externalT || internalT;
   const { categories, subcategories, loading: categoriesLoading } = useCategories();
   const [globalFilter, setGlobalFilter] = useState("");
   const [editingCell, setEditingCell] = useState<{

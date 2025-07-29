@@ -1,4 +1,4 @@
-import { Box, MenuItem, Select, Typography } from "@mui/material";
+import { Box, MenuItem, Select, Typography, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import React from "react";
@@ -14,6 +14,7 @@ interface FSelectProps {
 
 const FSelect = ({ label, options, onChange, sx, hideLabel = false, value: externalValue }: FSelectProps) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [internalValue, setInternalValue] = useState(externalValue || "");
 
   const handleChange = (newValue: string) => {
@@ -42,6 +43,7 @@ const FSelect = ({ label, options, onChange, sx, hideLabel = false, value: exter
             width: "100%",
             padding: "8.5px 14px",
             border: "1px solid #c4c4c4",
+            borderRadius: theme.shape.borderRadius,
             fontSize: "16px",
             background: "white",
             ...sx,

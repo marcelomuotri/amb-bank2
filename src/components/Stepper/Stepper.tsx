@@ -2,7 +2,6 @@ import { Box, Button, Typography } from '@mui/material'
 import { useStyles } from './stepper.styles'
 import FButton from '../FButton/FButton'
 import DownloadIcon from "../../assets/DownloadIcon"
-import { useTranslation } from 'react-i18next'
 
 interface Step {
   label: string
@@ -23,12 +22,10 @@ const Stepper = ({
   onNextStep,
   isStepperLoading,
   stepperButtonDisabled,
-  currentStep,
   steps,
   buttonTitle,
 }: StepperProps) => {
-  const { t } = useTranslation()
-  const { classes: styles } = useStyles()
+  const { classes: styles } = useStyles() 
 
   return (
     <Box className={styles.stepperContainer}>

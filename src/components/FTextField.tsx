@@ -1,4 +1,4 @@
-import { Box, TextField, Typography, SxProps, Theme, Chip } from "@mui/material";
+import { Box, TextField, Typography, SxProps, Theme, Chip, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import React from "react";
@@ -36,6 +36,7 @@ const FTextField = ({
   chips: externalChips,
 }: FTextFieldProps) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [internalValue, setInternalValue] = useState(externalValue || "");
   const [internalChips, setInternalChips] = useState<string[]>(externalChips || []);
 
@@ -105,6 +106,7 @@ const FTextField = ({
               fontSize: "16px",
               background: "white",
               border: "1px solid #c4c4c4",
+              borderRadius: theme.shape.borderRadius,
               minHeight: enableChips && internalChips.length > 0 ? "auto" : "56px",
               display: "flex",
               alignItems: "center",
@@ -137,15 +139,15 @@ const FTextField = ({
                     deleteIcon={<CloseIcon />}
                     size="small"
                     sx={{
-                      backgroundColor: "#e3f2fd",
-                      color: "#1976d2",
+                      backgroundColor: `${theme.palette.primary.main}20`,
+                      color: theme.palette.primary.main,
                       height: "24px",
                       fontSize: "12px",
                       "& .MuiChip-deleteIcon": {
-                        color: "#1976d2",
+                        color: theme.palette.primary.main,
                         fontSize: "16px",
                         "&:hover": {
-                          color: "#d32f2f",
+                          color: theme.palette.error.main,
                         },
                       },
                     }}
