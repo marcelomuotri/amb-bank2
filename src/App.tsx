@@ -15,6 +15,8 @@ import { ThemeProvider } from "@mui/material/styles";
 import appTheme from "./framework/theme/app-theme";
 import Home from "./features/Home/Home";
 import Search from "./features/Search/Search";
+import Clients from "./features/Clients/Clients";
+import ClientForm from "./features/Clients/ClientForm";
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -48,6 +50,18 @@ const router = createBrowserRouter([
       {
         path: "search",
         element: <Search />,
+      },
+      {
+        path: "clients",
+        element: <Clients />,
+      },
+      {
+        path: "clients/new",
+        element: <ClientForm />,
+      },
+      {
+        path: "clients/edit/:id",
+        element: <ClientForm />,
       },
     ],
   },

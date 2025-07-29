@@ -85,7 +85,10 @@ const Home = () => {
           activeStep={activeStep} 
           onNextStep={handleNextStep} 
           isStepperLoading={false} 
-          stepperButtonDisabled={false}
+          stepperButtonDisabled={
+            (activeStep === 1 && (!selectedClient || !selectedBank || fileItems.length === 0)) ||
+            (activeStep === 2 && isProcessing)
+          }
           currentStep={activeStep === 2 ? "step2" : undefined}
           steps={steps}
           buttonTitle={activeStep === 2 ? t("stepper.continueAndDownload") : t("stepper.continue")}

@@ -1,10 +1,12 @@
 import { useLocation, Navigate } from 'react-router-dom'
-import { Box } from '@mui/material'
+import { Box, useTheme } from '@mui/material'
 import Layout from '../components/Layout'
+import LoadingFade from '../components/LoadingFade'
 import { useAuth } from '../hooks/useAuth'
 
 const AuthGuard = () => {
   const location = useLocation()
+  const theme = useTheme()
   const { user, loading } = useAuth()
 
   const isAuthenticated = !!user
@@ -12,9 +14,18 @@ const AuthGuard = () => {
 
   if (loading) {
     return (
-      <Box>
-        <div>Loading...</div>
-      </Box>
+      <LoadingFade loading={true}>
+        <Box sx={{ 
+          backgroundColor: "white", 
+          minHeight: "100vh", 
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "center",
+          borderRadius: theme.shape.borderRadius
+        }}>
+          <div>Loading...</div>
+        </Box>
+      </LoadingFade>
     )
   }
   

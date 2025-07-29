@@ -67,6 +67,6 @@ export const theme = {
   typography: typographys,
   spacing: 1,
   shape: {
-    borderRadius: 13,
+    borderRadius: "8px",
   },
 }

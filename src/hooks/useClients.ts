@@ -1,29 +1,43 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchClients } from '../services/supabaseService';
+import { Client } from '../types/supabaseTypes';
 
-interface SelectorOption {
-  label: string;
-  value: string;
-}
+export const useClients = () => {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export function useClients() {
-  const [clients, setClients] = useState<SelectorOption[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    setLoading(true);
-    fetchClients()
-      .then((clientsData) => {
-        const mapped = clientsData.map((c) => ({ label: c.name, value: String(c.id) }));
-        setClients(mapped);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err);
-        setLoading(false);
-      });
+  const loadClients = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const clientsData = await fetchClients();
+      setClients(clientsData);
+    } catch (err) {
+      console.error('Error loading clients:', err);
+      setError('Error loading clients');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { clients, loading, error };
-} 
+  useEffect(() => {
+    loadClients();
+  }, [loadClients]);
+
+  // Función para recargar clientes
+  const refreshClients = useCallback(async () => {
+    await loadClients();
+  }, [loadClients]);
+
+  // Función para obtener clientes en formato de selector
+  const getClientsForSelector = () => {
+    return clients.map(client => ({
+      label: client.name,
+      value: client.id.toString()
+    }));
+  };
+
+  return { clients, loading, error, getClientsForSelector, refreshClients };
+}; 

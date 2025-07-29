@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { useState } from "react";
 import SimpleTable from "../../components/SimpleTable";
 import { searchColumns, TableRowData } from "../../config/simpleTableColumns";
@@ -27,6 +27,7 @@ interface SupabaseTransaction {
 }
 
 const Search = () => {
+  const theme = useTheme();
   const [rows, setRows] = useState<TableRowData[]>([]);
   const [showTable, setShowTable] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,8 +73,9 @@ const Search = () => {
     }
   };
 
-  const { clients } = useClients();
+  const { getClientsForSelector } = useClients();
   const [selectedClient, setSelectedClient] = useState("");
+  console.log(selectedClient);
 
   const handleSearch = async () => {
     if (!selectedClient) {
@@ -86,7 +88,7 @@ const Search = () => {
 
     try {
       // Hardcodeamos client_id = 1 como solicitado
-      const clientId = 1;
+      const clientId = parseInt(selectedClient);
 
       // Buscar transacciones del cliente en Supabase
       const transactions = await searchTransactionsByClient(clientId);
@@ -126,7 +128,7 @@ const Search = () => {
       <Box
         sx={{
           backgroundColor: "white",
-          borderRadius: "0px",
+          borderRadius: theme.shape.borderRadius,
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           padding: "24px",
           marginBottom: "24px",
@@ -153,7 +155,7 @@ const Search = () => {
           <Box sx={{ minWidth: 800 }}>
             <FSelect
               label=""
-              options={clients}
+              options={getClientsForSelector()}
               value={selectedClient}
               onChange={setSelectedClient}
               hideLabel={true}
@@ -163,21 +165,22 @@ const Search = () => {
           <FButton
             variant="contained"
             onClick={handleSearch}
-            disabled={!selectedClient || isLoading}
+            disabled={!selectedClient}
+            loading={isLoading}
             sx={{ ml: 2, height: 40 }}
-            title={isLoading ? "Buscando..." : t("table.search")}
+            title={t("table.search")}
           />
         </Box>
       </Box>
 
       {showTable && (
         <Box
-          sx={{
-            backgroundColor: "white",
-            borderRadius: "0px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            overflow: "hidden",
-          }}
+                  sx={{
+          backgroundColor: "white",
+          borderRadius: theme.shape.borderRadius,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          overflow: "hidden",
+        }}
         >
           <SimpleTable
             data={rows}

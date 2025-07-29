@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import SimpleTable from "../../components/SimpleTable";
@@ -111,6 +111,7 @@ const rowsData: TableRowData[] = [
 
 const SearchWithSimpleTable = () => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [rows, setRows] = useState<TableRowData[]>(rowsData);
 
   const handleRowUpdate = (newRow: TableRowData, oldRow: TableRowData) => {
@@ -125,7 +126,7 @@ const SearchWithSimpleTable = () => {
       <Box
         sx={{
           backgroundColor: "white",
-          borderRadius: "0px",
+          borderRadius: theme.shape.borderRadius,
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           padding: "24px",
           marginBottom: "24px",
@@ -147,7 +148,7 @@ const SearchWithSimpleTable = () => {
       <Box
         sx={{
           backgroundColor: "white",
-          borderRadius: "0px",
+          borderRadius: theme.shape.borderRadius,
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           overflow: "hidden",
         }}

@@ -1,6 +1,5 @@
 import { supabase } from '../../supaconfig';
-import { Client } from '../types/supabaseTypes';
-import { Bank } from '../types/supabaseTypes';
+import { Client, Bank, Category, Subcategory, Entity } from '../types/supabaseTypes';
 
 // Tipos para las respuestas
 export interface BatchTransaction {
@@ -57,7 +56,7 @@ export const uploadFilesToWebhook = async (
       formData.append('file', renamedFile);
     });
     // Mockear el client momentáneamente para que siempre sea 1
-    client = "1";
+    //client = "1";
     // Agregar cliente
     formData.append('client_id', client);
 
@@ -176,7 +175,8 @@ export const fetchClients = async (): Promise<Client[]> => {
   try {
     const { data, error } = await supabase
       .from('clients')
-      .select('*');
+      .select('*')
+      .order('id', { ascending: true });
     if (error) throw error;
     return data as Client[];
   } catch (error) {
@@ -318,6 +318,239 @@ export const searchTransactionsByClient = async (clientId: number): Promise<any[
     
   } catch (error) {
     console.error('Error inesperado buscando transacciones:', error);
+    throw error;
+  }
+}; 
+
+// Función para obtener todas las categorías de la tabla categories
+export const fetchCategories = async (): Promise<Category[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('category')
+      .select('*');
+    if (error) throw error;
+    return data as Category[] || [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    throw error;
+  }
+}; 
+
+// Función para obtener todas las subcategorías de la tabla subcategories
+export const fetchSubcategories = async (): Promise<Subcategory[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('subcategory')
+      .select('*');
+    if (error) throw error;
+    return data as Subcategory[] || [];
+  } catch (error) {
+    console.error('Error fetching subcategories:', error);
+    throw error;
+  }
+}; 
+
+// Función para crear un nuevo cliente
+export const createClient = async (clientData: {
+  name: string;
+  ein: string;
+  industry: string;
+}): Promise<Client> => {
+  try {
+    const { data, error } = await supabase
+      .from('clients')
+      .insert([{
+        ...clientData,
+        organization_id: 'ec8b9ff0-1533-468d-93dd-2dd0deeb0188'
+      }])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as Client;
+  } catch (error) {
+    console.error('Error creating client:', error);
+    throw error;
+  }
+};
+
+// Función para crear una entity
+export const createEntity = async (entityData: {
+  name: string;
+  keywords: string[];
+  type: string;
+  client_id: number;
+}): Promise<Entity> => {
+  try {
+    const { data, error } = await supabase
+      .from('entities')
+      .insert({
+        name: entityData.name,
+        keywords: entityData.keywords,
+        type: entityData.type,
+        client_id: entityData.client_id,
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating entity:', error);
+      throw error;
+    }
+    
+    console.log('Entity created successfully:', data);
+    return data;
+  } catch (error) {
+    console.error('Unexpected error creating entity:', error);
+    throw error;
+  }
+};
+
+// Función para crear múltiples entities
+export const createMultipleEntities = async (entitiesData: {
+  name: string;
+  keywords: string[];
+  type: string;
+  client_id: number;
+}[]): Promise<Entity[]> => {
+  try {
+    const entitiesToInsert = entitiesData.map(entity => ({
+      name: entity.name,
+      keywords: entity.keywords,
+      type: entity.type,
+      client_id: entity.client_id,
+    }));
+
+    const { data, error } = await supabase
+      .from('entities')
+      .insert(entitiesToInsert)
+      .select();
+    
+    if (error) {
+      console.error('Error creating multiple entities:', error);
+      throw error;
+    }
+    
+    console.log('Multiple entities created successfully:', data);
+    return data as Entity[];
+  } catch (error) {
+    console.error('Unexpected error creating multiple entities:', error);
+    throw error;
+  }
+}; 
+
+// Función para eliminar un cliente
+export const deleteClient = async (clientId: number): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('clients')
+      .delete()
+      .eq('id', clientId);
+    
+    if (error) {
+      console.error('Error deleting client:', error);
+      throw error;
+    }
+    
+    console.log('Client deleted successfully:', { clientId });
+    return true;
+    
+  } catch (error) {
+    console.error('Unexpected error deleting client:', error);
+    throw error;
+  }
+}; 
+
+// Función para obtener un cliente específico por ID
+export const fetchClientById = async (clientId: number): Promise<Client | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('id', clientId)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching client:', error);
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Unexpected error fetching client:', error);
+    throw error;
+  }
+};
+
+// Función para actualizar un cliente
+export const updateClient = async (clientId: number, updates: {
+  name: string;
+  ein: string;
+  industry: string;
+}): Promise<Client> => {
+  try {
+    const { data, error } = await supabase
+      .from('clients')
+      .update({
+        name: updates.name,
+        ein: updates.ein,
+        industry: updates.industry,
+      })
+      .eq('id', clientId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating client:', error);
+      throw error;
+    }
+    
+    console.log('Client updated successfully:', data);
+    return data;
+  } catch (error) {
+    console.error('Unexpected error updating client:', error);
+    throw error;
+  }
+}; 
+
+// Función para obtener entities por client_id
+export const fetchEntitiesByClientId = async (clientId: number): Promise<Entity[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('entities')
+      .select('*')
+      .eq('client_id', clientId);
+    
+    if (error) {
+      console.error('Error fetching entities:', error);
+      throw error;
+    }
+    
+    console.log('Entities fetched for client:', clientId, data);
+    return data as Entity[];
+  } catch (error) {
+    console.error('Unexpected error fetching entities:', error);
+    throw error;
+  }
+}; 
+
+// Función para eliminar todas las entities de un cliente
+export const deleteEntitiesByClientId = async (clientId: number): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('entities')
+      .delete()
+      .eq('client_id', clientId);
+    
+    if (error) {
+      console.error('Error deleting entities:', error);
+      throw error;
+    }
+    
+    console.log('All entities deleted for client:', clientId);
+    return true;
+  } catch (error) {
+    console.error('Unexpected error deleting entities:', error);
     throw error;
   }
 }; 

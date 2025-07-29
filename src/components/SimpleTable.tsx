@@ -39,6 +39,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SearchField from "./SearchField";
 import FSelect from "./FSelect";
 import ConfirmDialog from "./ConfirmDialog";
+import { useCategories } from "../hooks/useCategories";
 
 // Tipos
 interface TableData {
@@ -66,6 +67,8 @@ interface SimpleTableProps<TData extends TableData = TableData> {
   sortable?: boolean;
   pagination?: boolean;
   resizable?: boolean;
+  disableFilter?: boolean;
+  disableSearch?: boolean;
   banks?: Bank[];
 }
 
@@ -160,11 +163,14 @@ export default function SimpleTable<TData extends TableData = TableData>({
   sortable = true,
   pagination = true,
   resizable = false,
+  disableFilter = false,
+  disableSearch = false,
   banks,
 }: SimpleTableProps<TData>) {
   console.log("columns", columns);
   const theme = useTheme();
   const { t } = useTranslation();
+  const { categories, subcategories, loading: categoriesLoading } = useCategories();
   const [globalFilter, setGlobalFilter] = useState("");
   const [editingCell, setEditingCell] = useState<{
     rowId: string;
@@ -476,8 +482,8 @@ export default function SimpleTable<TData extends TableData = TableData>({
 
     // Si es la columna account, accountType o bank, abrir el select automáticamente
     if (
-      columnId === "account" ||
-      columnId === "accountType" ||
+      columnId === "category" ||
+      columnId === "subcategory" ||
       columnId === "bank"
     ) {
       setSelectOpen(true);
@@ -529,15 +535,28 @@ export default function SimpleTable<TData extends TableData = TableData>({
     setEditingValue("");
   };
 
-  const saveCellWithValue = (value: string) => {
-    if (!editingCell || !onRowUpdate) return;
+  const saveCellWithValue = async (value: string) => {
+    if (!editingCell) return;
 
     const row = table.getRow(editingCell.rowId);
     const oldRow = row.original;
 
-    const newRow = { ...oldRow, [editingCell.columnId]: value };
+    // Si tenemos onCellUpdate, usarlo para actualizar la base de datos
+    if (onCellUpdate && oldRow.transaction_id) {
+      try {
+        await onCellUpdate(oldRow.transaction_id, editingCell.columnId, value);
+      } catch (error) {
+        console.error('Error updating cell:', error);
+        return;
+      }
+    }
 
-    onRowUpdate(newRow, oldRow);
+    // Si tenemos onRowUpdate, usarlo para actualizar el estado local
+    if (onRowUpdate) {
+      const newRow = { ...oldRow, [editingCell.columnId]: value };
+      onRowUpdate(newRow, oldRow);
+    }
+
     setEditingCell(null);
     setEditingValue("");
     setSelectOpen(false);
@@ -575,38 +594,22 @@ export default function SimpleTable<TData extends TableData = TableData>({
     []
   );
 
-  // Opciones para el select de category
+  // Opciones para el select de account (category)
   const categorySelectOptions = useMemo(
-    () => [
-      { label: "Advertising & Promotion", value: "Advertising & Promotion" },
-      { label: "Bank Services Charges", value: "Bank Services Charges" },
-      { label: "Computer & Internet", value: "Computer & Internet" },
-      { label: "Contractors", value: "Contractors" },
-      { label: "Insurance Expense", value: "Insurance Expense" },
-      { label: "Meals & Entertainment", value: "Meals & Entertainment" },
-      { label: "Membership & Dues", value: "Membership & Dues" },
-      { label: "Office Supplies", value: "Office Supplies" },
-      { label: "Parts Purchases", value: "Parts Purchases" },
-      { label: "Plates", value: "Plates" },
-      { label: "Rent Expense", value: "Rent Expense" },
-      { label: "Repairs & Maintenance", value: "Repairs & Maintenance" },
-      { label: "Sales", value: "Sales" },
-      { label: "Sales Commissions", value: "Sales Commissions" },
-      { label: "Shipping", value: "Shipping" },
-      { label: "Telephone Expense", value: "Telephone Expense" },
-    ],
-    []
+    () => categories.map(category => ({
+      label: category.name,
+      value: category.name
+    })),
+    [categories]
   );
 
-  // Opciones para el select de subcategory
+  // Opciones para el select de account_type (subcategory)
   const subcategorySelectOptions = useMemo(
-    () => [
-      { label: "Cost of Goods Sold", value: "Cost of Goods Sold" },
-      { label: "Expense", value: "Expense" },
-      { label: "Income", value: "Income" },
-      { label: "Test", value: "Test" },
-    ],
-    []
+    () => subcategories.map(subcategory => ({
+      label: subcategory.name,
+      value: subcategory.name
+    })),
+    [subcategories]
   );
 
   // // Opciones para el select de bank
@@ -681,8 +684,8 @@ export default function SimpleTable<TData extends TableData = TableData>({
     if (isEditing) {
       // Determinar el tipo de input basado en el campo
       const isNumericField = numericFields.has(cell.column.id);
-      const isAccountField = cell.column.id === "account";
-      const isAccountTypeField = cell.column.id === "accountType";
+      const isAccountField = cell.column.id === "category";
+      const isAccountTypeField = cell.column.id === "subcategory";
       const isBankField = cell.column.id === "bank";
 
       // Si es la columna account, mostrar select
@@ -690,11 +693,11 @@ export default function SimpleTable<TData extends TableData = TableData>({
         return (
           <Select
             value={editingValue}
-            onChange={(e) => {
+            onChange={async (e) => {
               const value = e.target.value;
               setEditingValue(value);
-              // Guardar inmediatamente con el valor seleccionadon
-              saveCellWithValue(value);
+              // Guardar inmediatamente con el valor seleccionado
+              await saveCellWithValue(value);
               setSelectOpen(false);
             }}
             open={selectOpen}
@@ -730,11 +733,11 @@ export default function SimpleTable<TData extends TableData = TableData>({
         return (
           <Select
             value={editingValue}
-            onChange={(e) => {
+            onChange={async (e) => {
               const value = e.target.value;
               setEditingValue(value);
               // Guardar inmediatamente con el valor seleccionado
-              saveCellWithValue(value);
+              await saveCellWithValue(value);
               setSelectOpen(false);
             }}
             open={selectOpen}
@@ -880,27 +883,31 @@ export default function SimpleTable<TData extends TableData = TableData>({
   return (
     <>
       {/* Barra de búsqueda - se oculta cuando hay filas seleccionadas */}
+      {searchable && !disableSearch && selectedRows.length === 0 && (
       <Box sx={{ minHeight: 90, backgroundColor: "white"}}>
-      {searchable && selectedRows.length === 0 && (
+
         <SearchContainer>
           <SearchField
             value={searchValue}
             onChange={handleSearchChange}
             placeholder={t("table.searchAllColumns")}
           />
-          <IconButton
-            onClick={handleFilterMenuOpen}
-            sx={{
-              color: filterMenuAnchor ? "primary.main" : "text.secondary",
-              "&:hover": {
-                backgroundColor: "action.hover",
-              },
-            }}
-          >
-            <FilterList />
-          </IconButton>
+          {!disableFilter && (
+            <IconButton
+              onClick={handleFilterMenuOpen}
+              sx={{
+                color: filterMenuAnchor ? "primary.main" : "text.secondary",
+                "&:hover": {
+                  backgroundColor: "action.hover",
+                },
+              }}
+            >
+              <FilterList />
+            </IconButton>
+          )}
           
         </SearchContainer>
+      </Box>
       )}
 
       {/* Barra de eliminación - se muestra cuando hay filas seleccionadas */}
@@ -958,7 +965,6 @@ export default function SimpleTable<TData extends TableData = TableData>({
            </Button>
         </Box>
       )}
-      </Box>
 
 
       {/* Chips de filtros activos */}
@@ -1689,8 +1695,8 @@ export default function SimpleTable<TData extends TableData = TableData>({
                   }}
                 >
                   {globalFilter
-                    ? "No se encontraron resultados para tu búsqueda."
-                    : "No hay datos disponibles."}
+                    ? t("table.noSearchResults")
+                    : t("table.noDataAvailable")}
                 </TableCell>
               </TableRow>
             )}
