@@ -12,7 +12,7 @@ export const theme = {
       light: '#D8E8EB',
     },
     text: {
-      primary: '#231F20',
+      primary: '#374151',
       secondary: '#074A56',
       input: '#495057',
     },

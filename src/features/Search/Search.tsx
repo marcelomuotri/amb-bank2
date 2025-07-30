@@ -43,22 +43,27 @@ const Search = () => {
     try {
       // TODO: Implementar delete en Supabase
       console.log("Deleting transactions:", transactionIds);
-      
+
       // Actualizar estado local
       setRows((prevRows) =>
         prevRows.filter((row) => !transactionIds.includes(row.transaction_id))
       );
     } catch (error) {
       console.error("Error deleting transactions:", error);
-      alert("Error al eliminar las transacciones. Por favor, intenta de nuevo.");
+      alert(
+        "Error al eliminar las transacciones. Por favor, intenta de nuevo."
+      );
     }
   };
 
-  const handleBulkUpdate = async (transactionIds: string[], updates: { [key: string]: string | number }) => {
+  const handleBulkUpdate = async (
+    transactionIds: string[],
+    updates: { [key: string]: string | number }
+  ) => {
     try {
       // TODO: Implementar bulk update en Supabase
       console.log("Bulk updating transactions:", { transactionIds, updates });
-      
+
       // Actualizar estado local
       setRows((prevRows) =>
         prevRows.map((row) =>
@@ -69,7 +74,9 @@ const Search = () => {
       );
     } catch (error) {
       console.error("Error bulk updating transactions:", error);
-      alert("Error al actualizar las transacciones. Por favor, intenta de nuevo.");
+      alert(
+        "Error al actualizar las transacciones. Por favor, intenta de nuevo."
+      );
     }
   };
 
@@ -151,17 +158,16 @@ const Search = () => {
         >
           {t("searchClients")}
         </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 50 }}>
-          <Box sx={{ minWidth: 800 }}>
-            <FSelect
-              label=""
-              options={getClientsForSelector()}
-              value={selectedClient}
-              onChange={setSelectedClient}
-              hideLabel={true}
-              sx={{ marginTop: 0 }}
-            />
-          </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <FSelect
+            label=""
+            options={getClientsForSelector()}
+            value={selectedClient}
+            onChange={setSelectedClient}
+            hideLabel={true}
+            sx={{ marginTop: 0, width: 390 }}
+            placeholder={t("step1.selectClient")}
+          />
           <FButton
             variant="contained"
             onClick={handleSearch}
@@ -175,12 +181,12 @@ const Search = () => {
 
       {showTable && (
         <Box
-                  sx={{
-          backgroundColor: "white",
-          borderRadius: theme.shape.borderRadius,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          overflow: "hidden",
-        }}
+          sx={{
+            backgroundColor: "white",
+            borderRadius: theme.shape.borderRadius,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            overflow: "hidden",
+          }}
         >
           <SimpleTable
             data={rows}

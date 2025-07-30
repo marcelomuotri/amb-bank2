@@ -84,7 +84,8 @@ const StyledTableContainer = styled(TableContainer)(() => ({
       fontWeight: 600,
       fontSize: 14,
       color: "#131212",
-      borderBottom: "2px solid #e0e0e0",
+      borderBottom: "none",
+      borderTop: "none",
     },
   },
   "& .MuiTableBody-root": {
@@ -130,7 +131,6 @@ const SearchContainer = styled(Box)(() => ({
   alignItems: "center",
   gap: 16,
   padding: "20px",
-  borderBottom: "1px solid #e0e0e0",
   backgroundColor: "white",
   justifyContent: "flex-end",
 }));

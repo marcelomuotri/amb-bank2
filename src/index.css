@@ -5,7 +5,14 @@ body {
     -apple-system,
     system-ui,
     sans-serif;
-  background-color: #dddde0;
+  background-color: #F3F4F6;
+  color: #374151;
+  h1 {
+    color: #1F2937;
+  }
+  h2 {
+    color: #1F2937;
+  }
 }
 
 /* Forzar border radius en DataGrid */

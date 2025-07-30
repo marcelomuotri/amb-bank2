@@ -7,12 +7,13 @@ interface FSelectProps {
   label: string;
   options: { value: string; label: string }[];
   onChange?: (value: string) => void;
-  sx?: any;
+  sx?: object;
   hideLabel?: boolean;
   value?: string;
+  placeholder?: string;
 }
 
-const FSelect = ({ label, options, onChange, sx, hideLabel = false, value: externalValue }: FSelectProps) => {
+const FSelect = ({ label, options, onChange, sx, hideLabel = false, value: externalValue, placeholder }: FSelectProps) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const [internalValue, setInternalValue] = useState(externalValue || "");
@@ -39,8 +40,15 @@ const FSelect = ({ label, options, onChange, sx, hideLabel = false, value: exter
           value={internalValue}
           onChange={(e) => handleChange(e.target.value)}
           displayEmpty
+          renderValue={(selected) => {
+            if (!selected) {
+              return <span style={{ color: '#6B7280' }}>{placeholder || t(label)}</span>;
+            }
+            return options.find(option => option.value === selected)?.label || selected;
+          }}
           sx={{
             width: "100%",
+            //height: "40px",
             padding: "8.5px 14px",
             border: "1px solid #c4c4c4",
             borderRadius: theme.shape.borderRadius,

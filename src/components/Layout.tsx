@@ -3,9 +3,9 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SearchIcon from "@mui/icons-material/Search";
 import PeopleIcon from "@mui/icons-material/People";
+import AddchartIcon from '@mui/icons-material/Addchart';
 import { useNavigate } from "react-router-dom";
 import UserProfile from "./UserProfile";
 
@@ -16,7 +16,7 @@ const logoUrl = "https://cdn-icons-png.flaticon.com/512/2830/2830284.png";
 const menuItems = [
   {
     path: "/",
-    icon: FileUploadIcon,
+    icon: AddchartIcon,
     label: "layout.uploadFiles",
   },
   {
@@ -96,6 +96,9 @@ const Layout = () => {
           "& .ps-menu-button": {
             paddingLeft: "5px !important",
             paddingRight: "5px !important",
+          },
+          "& .ps-sidebar-container": {
+            backgroundColor: "white",
           },
         }}
       >

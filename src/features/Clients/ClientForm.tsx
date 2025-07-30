@@ -246,7 +246,7 @@ const ClientForm = () => {
   return (
     <LoadingFade loading={loading}>
       <Box sx={{ backgroundColor: "white", minHeight: "50vh", padding: 24, borderRadius: theme.shape.borderRadius }}>
-        <Typography sx={{ fontSize: 24, fontWeight: 700, mb: 20 }}>
+        <Typography component="h1" sx={{ fontSize: 24, fontWeight: 700, mb: 20 }}>
           {isEditing ? t("clients.editTitle") : t("clients.registerTitle")}
         </Typography>
         
@@ -282,7 +282,7 @@ const ClientForm = () => {
           {/* Related Entities Section */}
           <Box sx={{ mb: 20, mt: 20 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 20 }}>
-              <Typography sx={{ fontSize: 18, fontWeight: 700 }}>
+              <Typography component="h2" sx={{ fontSize: 18, fontWeight: 700 }}>
                 {t("clients.relatedEntities")}
               </Typography>
               <Button

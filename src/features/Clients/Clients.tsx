@@ -133,7 +133,7 @@ const Clients = () => {
       <LoadingFade loading={loading}>
         <Box sx={{ backgroundColor: "white", minHeight: "80vh", padding: 24, borderRadius: theme.shape.borderRadius }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
-            <Typography sx={{ fontSize: 24, fontWeight: 700 }}>
+            <Typography component="h1" sx={{ fontSize: 24, fontWeight: 700 }}>
               {t("clients.title")}
             </Typography>
             <FButton

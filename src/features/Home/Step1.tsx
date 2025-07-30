@@ -1,12 +1,12 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
-import { useClients } from '../../hooks/useClients';
+import { useClients } from "../../hooks/useClients";
 import FSelect from "../../components/FSelect";
 import FileUpload from "../../components/FileUpload";
 import SummaryItem from "../../components/SummaryItem/SummaryItem";
 import LoadingFade from "../../components/LoadingFade";
-import { Bank } from '../../types/supabaseTypes';
+import { Bank } from "../../types/supabaseTypes";
 
 interface FileItem {
   id: string;
@@ -27,11 +27,25 @@ interface Step1Props {
   banksError: Error | null;
 }
 
-const Step1 = ({ selectedClient, setSelectedClient, selectedBank, setSelectedBank, fileItems, setFileItems, banks, banksLoading, banksError }: Step1Props) => {
+const Step1 = ({
+  selectedClient,
+  setSelectedClient,
+  selectedBank,
+  setSelectedBank,
+  fileItems,
+  setFileItems,
+  banks,
+  banksLoading,
+  banksError,
+}: Step1Props) => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { loading: clientsLoading, error: clientsError, getClientsForSelector } = useClients();
-  
+  const {
+    loading: clientsLoading,
+    error: clientsError,
+    getClientsForSelector,
+  } = useClients();
+
   const handleClientChange = (value: string) => {
     setSelectedClient(value);
   };
@@ -46,26 +60,29 @@ const Step1 = ({ selectedClient, setSelectedClient, selectedBank, setSelectedBan
       return;
     }
     // Buscar el banco por id (selectedBank)
-    const selectedBankData = banks.find(bank => bank.value === selectedBank);
+    const selectedBankData = banks.find((bank) => bank.value === selectedBank);
     const bankName = selectedBankData ? selectedBankData.label : selectedBank;
     // Formatear el nombre del archivo como 'Banco - NombreOriginal.extensión'
-    const newFileItems = files.map(file => {      
-      const fileExtension = file.name.split('.').pop();
-      const fileNameWithoutExtension = file.name.replace(`.${fileExtension}`, '');
+    const newFileItems = files.map((file) => {
+      const fileExtension = file.name.split(".").pop();
+      const fileNameWithoutExtension = file.name.replace(
+        `.${fileExtension}`,
+        ""
+      );
       const finalFileName = `${bankName} - ${fileNameWithoutExtension}.${fileExtension}`;
-      console.log('Archivo a enviar:', finalFileName, 'Banco:', bankName);
+      console.log("Archivo a enviar:", finalFileName, "Banco:", bankName);
       return {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         file,
         bankName: bankName,
-        fileName: finalFileName
+        fileName: finalFileName,
       };
     });
     setFileItems([...fileItems, ...newFileItems]);
   };
 
   const handleDeleteFile = (fileId: string) => {
-    setFileItems(fileItems.filter(item => item.id !== fileId));
+    setFileItems(fileItems.filter((item) => item.id !== fileId));
   };
 
   // Validar y notificar al componente padre (opcional, si se requiere)
@@ -89,58 +106,72 @@ const Step1 = ({ selectedClient, setSelectedClient, selectedBank, setSelectedBan
       }}
     >
       {/* Left column - 50% width */}
-      <Box sx={{ 
-        flex: "1", 
-        display: "flex", 
-        flexDirection: "column", 
-        gap: 20,
-      }}>
-                <Box> 
-          <Typography sx={{ fontSize: 24, fontWeight: 700, mb: 10 }}>
+      <Box
+        sx={{
+          flex: "1",
+          display: "flex",
+          flexDirection: "column",
+          gap: 48,
+        }}
+      >
+        <Box>
+          <Typography
+            component="h1"
+            sx={{ fontSize: 24, fontWeight: 700, mb: 10 }}
+          >
             {t("step1.selectClient")}
           </Typography>
-          <Typography sx={{ fontSize: 16, color: '#6B7280', mb: 20 }}>
+          <Typography sx={{ fontSize: 16, color: "#6B7280", mb: 20 }}>
             {t("step1.chooseClientSubtitle")}
           </Typography>
           <LoadingFade loading={clientsLoading}>
             {clientsError ? (
-            <Typography sx={{ fontSize: 16, color: 'red' }}>Error cargando clientes</Typography>
-          ) : (
-            <FSelect 
-              options={getClientsForSelector()} 
-              label="step1.client" 
-              onChange={handleClientChange}
-            />
-          )}
+              <Typography sx={{ fontSize: 16, color: "red" }}>
+                Error cargando clientes
+              </Typography>
+            ) : (
+              <FSelect
+                options={getClientsForSelector()}
+                label="step1.client"
+                onChange={handleClientChange}
+                placeholder={t("step1.selectClient")}
+              />
+            )}
           </LoadingFade>
         </Box>
-        
-                {/* Bank selector and upload area - Only show when client is selected */}
+
+        {/* Bank selector and upload area - Only show when client is selected */}
         {selectedClient && (
           <Box>
-            <Typography sx={{ fontSize: 24, fontWeight: 700, mb: 10 }}>
+            <Typography
+              component="h1"
+              sx={{ fontSize: 24, fontWeight: 700, mb: 10 }}
+            >
               {t("step1.uploadBankStatement")}
             </Typography>
-            <Typography sx={{ fontSize: 16, color: '#6B7280', mb: 20 }}>
+            <Typography sx={{ fontSize: 16, color: "#6B7280", mb: 20 }}>
               {t("step1.chooseBankSubtitle")}
             </Typography>
             <LoadingFade loading={banksLoading}>
               {banksError ? (
-              <Typography sx={{ fontSize: 16, color: 'red' }}>Error cargando bancos</Typography>
-            ) : (
-              <FSelect 
-                options={banks} 
-                label="step1.bank" 
-                onChange={handleBankChange}
-              />
-            )}
+                <Typography sx={{ fontSize: 16, color: "red" }}>
+                  Error cargando bancos
+                </Typography>
+              ) : (
+                <FSelect
+                  options={banks}
+                  label="step1.bank"
+                  onChange={handleBankChange}
+                  placeholder={t("step1.selectBank")}
+                />
+              )}
             </LoadingFade>
-            
+
             {/* File upload area - Always visible when bank is selected */}
             {selectedBank && (
               <Box sx={{ mt: 20 }}>
                 <FileUpload onFileSelect={handleFileSelect} />
-                
+
                 {/* Progress indicator */}
               </Box>
             )}
@@ -151,26 +182,31 @@ const Step1 = ({ selectedClient, setSelectedClient, selectedBank, setSelectedBan
       {/* Right column - Summary (50%) - Only show when client is selected */}
       {selectedClient ? (
         <Box sx={{ flex: "1", display: "flex", flexDirection: "column" }}>
-          <Typography sx={{ fontSize: 20, fontWeight: 700, mb: 20 }}>
+          <Typography
+            component="h2"
+            sx={{ fontSize: 20, fontWeight: 700, mb: 20 }}
+          >
             {t("step1.summary")} ({fileItems.length})
           </Typography>
-          <Box sx={{ 
-            display: "flex", 
-            flexDirection: "column", 
-            gap: 10,
-            maxHeight: "calc(100vh - 200px)",
-            overflowY: "auto"
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              maxHeight: "calc(100vh - 200px)",
+              overflowY: "auto",
+            }}
+          >
             {fileItems.length === 0 ? (
               <Typography sx={{ color: "#666", fontStyle: "italic" }}>
                 {t("step1.noFilesUploaded")}
               </Typography>
             ) : (
               fileItems.map((item) => (
-                <SummaryItem 
+                <SummaryItem
                   key={item.id}
-                  bankName={item.bankName} 
-                  fileName={item.fileName} 
+                  bankName={item.bankName}
+                  fileName={item.fileName}
                   onDelete={() => handleDeleteFile(item.id)}
                   sx={{ width: 400 }}
                 />
