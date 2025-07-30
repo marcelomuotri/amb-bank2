@@ -88,46 +88,52 @@ const Step1 = ({ selectedClient, setSelectedClient, selectedBank, setSelectedBan
         borderRadius: theme.shape.borderRadius,
       }}
     >
-      {/* Left column - Always 2/3 width */}
+      {/* Left column - 50% width */}
       <Box sx={{ 
-        flex: "2", 
+        flex: "1", 
         display: "flex", 
         flexDirection: "column", 
         gap: 20,
       }}>
-        <Box> 
+                <Box> 
           <Typography sx={{ fontSize: 24, fontWeight: 700, mb: 10 }}>
             {t("step1.selectClient")}
           </Typography>
+          <Typography sx={{ fontSize: 16, color: '#6B7280', mb: 20 }}>
+            {t("step1.chooseClientSubtitle")}
+          </Typography>
           <LoadingFade loading={clientsLoading}>
             {clientsError ? (
-              <Typography sx={{ fontSize: 16, color: 'red' }}>Error cargando clientes</Typography>
-            ) : (
-              <FSelect 
-                options={getClientsForSelector()} 
-                label="step1.client" 
-                onChange={handleClientChange}
-              />
-            )}
+            <Typography sx={{ fontSize: 16, color: 'red' }}>Error cargando clientes</Typography>
+          ) : (
+            <FSelect 
+              options={getClientsForSelector()} 
+              label="step1.client" 
+              onChange={handleClientChange}
+            />
+          )}
           </LoadingFade>
         </Box>
         
-        {/* Bank selector and upload area - Only show when client is selected */}
+                {/* Bank selector and upload area - Only show when client is selected */}
         {selectedClient && (
           <Box>
             <Typography sx={{ fontSize: 24, fontWeight: 700, mb: 10 }}>
               {t("step1.uploadBankStatement")}
             </Typography>
+            <Typography sx={{ fontSize: 16, color: '#6B7280', mb: 20 }}>
+              {t("step1.chooseBankSubtitle")}
+            </Typography>
             <LoadingFade loading={banksLoading}>
               {banksError ? (
-                <Typography sx={{ fontSize: 16, color: 'red' }}>Error cargando bancos</Typography>
-              ) : (
-                <FSelect 
-                  options={banks} 
-                  label="step1.bank" 
-                  onChange={handleBankChange}
-                />
-              )}
+              <Typography sx={{ fontSize: 16, color: 'red' }}>Error cargando bancos</Typography>
+            ) : (
+              <FSelect 
+                options={banks} 
+                label="step1.bank" 
+                onChange={handleBankChange}
+              />
+            )}
             </LoadingFade>
             
             {/* File upload area - Always visible when bank is selected */}
@@ -142,7 +148,7 @@ const Step1 = ({ selectedClient, setSelectedClient, selectedBank, setSelectedBan
         )}
       </Box>
 
-      {/* Right column - Summary (1/3) - Only show when client is selected */}
+      {/* Right column - Summary (50%) - Only show when client is selected */}
       {selectedClient ? (
         <Box sx={{ flex: "1", display: "flex", flexDirection: "column" }}>
           <Typography sx={{ fontSize: 20, fontWeight: 700, mb: 20 }}>
@@ -166,13 +172,14 @@ const Step1 = ({ selectedClient, setSelectedClient, selectedBank, setSelectedBan
                   bankName={item.bankName} 
                   fileName={item.fileName} 
                   onDelete={() => handleDeleteFile(item.id)}
+                  sx={{ width: 400 }}
                 />
               ))
             )}
           </Box>
         </Box>
       ) : (
-        /* Invisible placeholder to maintain 2/3 width for left column */
+        /* Invisible placeholder to maintain 50% width for left column */
         <Box sx={{ flex: "1" }} />
       )}
     </Box>

@@ -253,6 +253,7 @@ const ClientForm = () => {
         <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 20 }}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <FTextField
+              sx={{ width: "70%" }}
               label="clients.clientName"
               placeholder="clients.clientNamePlaceholder"
               value={clientName}

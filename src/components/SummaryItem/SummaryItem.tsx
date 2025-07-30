@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import PaperIcon from "@mui/icons-material/Description";
 import CloseIcon from "@mui/icons-material/Close";
 // import EditIcon from "@mui/icons-material/Edit";
@@ -11,10 +11,12 @@ interface SummaryItemProps {
   bankName: string;
   fileName: string;
   onDelete?: () => void;
+  sx?: object;
   // onUpdate?: (newBankName: string, newFileName: string) => void;
 }
 
-const SummaryItem = ({ bankName, fileName, onDelete }: SummaryItemProps) => {
+const SummaryItem = ({ bankName, fileName, onDelete, sx }: SummaryItemProps) => {
+  const theme = useTheme();
   // const { t } = useTranslation();
   // const [isEditing, setIsEditing] = useState(false);
   // const [editBankName, setEditBankName] = useState(bankName);
@@ -51,7 +53,7 @@ const SummaryItem = ({ bankName, fileName, onDelete }: SummaryItemProps) => {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        p: 10,
+        p: 24,
         border: "1px solid lightgrey",
         borderRadius: "20px",
         backgroundColor: "white",
@@ -59,10 +61,23 @@ const SummaryItem = ({ bankName, fileName, onDelete }: SummaryItemProps) => {
         "&:hover": {
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         },
+        ...sx,
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 20, flex: 1 }}>
-        <PaperIcon sx={{ fontSize: 30, color: "grey" }} />
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 50,
+            height: 50,
+            borderRadius: "50%",
+            backgroundColor: `${theme.palette.primary.main}20`,
+          }}
+        >
+          <PaperIcon sx={{ fontSize: 32, color: theme.palette.primary.main }} />
+        </Box>
         
         {/* {isEditing ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>

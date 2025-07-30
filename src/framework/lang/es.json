@@ -73,6 +73,8 @@
     "step1.upload": "Subir",
     "step1.uploadAll": "Subir todos los archivos",
     "step1.uploadBankStatement": "Subir Estado de Cuenta",
+    "step1.chooseClientSubtitle": "Elige el cliente para este estado de cuenta",
+    "step1.chooseBankSubtitle": "Elige el banco para este estado de cuenta",
     "step1.uploadSuccess": "Archivos subidos exitosamente",
     "stepper.continue": "Continuar",
     "stepper.continueAndDownload": "Continuar y Descargar",

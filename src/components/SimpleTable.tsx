@@ -98,6 +98,7 @@ const StyledTableContainer = styled(TableContainer)(() => ({
     },
     "& .MuiTableCell-body": {
       borderBottom: "1px solid #e0e0e0",
+      color: "#6B7280",
       padding: "12px 16px",
       fontSize: 14,
       "& > *": {

@@ -73,6 +73,8 @@
     "step1.upload": "Upload",
     "step1.uploadAll": "Upload all files",
     "step1.uploadBankStatement": "Upload Bank Statement",
+    "step1.chooseClientSubtitle": "Choose the client for this statement",
+    "step1.chooseBankSubtitle": "Choose the bank for this statement",
     "step1.uploadSuccess": "Files uploaded successfully",
     "stepper.continue": "Continue",
     "stepper.continueAndDownload": "Continue and Download",

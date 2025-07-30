@@ -1,0 +1,164 @@
+import { Box, Typography, Avatar, useTheme } from "@mui/material";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useAuth } from "../hooks/useAuth";
+import { supabase } from "../../supaconfig";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import LogoutIcon from "@mui/icons-material/Logout";
+
+const UserProfile = () => {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const { user } = useAuth();
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Función para obtener la primera letra del email
+  const getInitials = (email: string) => {
+    return email.charAt(0).toUpperCase();
+  };
+
+  // Función para generar color basado en el email
+  const getAvatarColor = (email: string) => {
+    const colors = [
+      '#1976d2', '#388e3c', '#d32f2f', '#7b1fa2', 
+      '#303f9f', '#ff8f00', '#c2185b', '#5d4037',
+      '#455a64', '#ff6f00', '#8e24aa', '#1565c0'
+    ];
+    const index = email.charCodeAt(0) % colors.length;
+    return colors[index];
+  };
+
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const handleLogout = () => {
+    supabase.auth.signOut();
+  };
+
+  if (!user?.email) return null;
+
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        cursor: "pointer",
+        userSelect: "none",
+      }}
+    >
+      {/* Contenido principal */}
+      <Box
+        onClick={handleToggle}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          borderRadius: theme.shape.borderRadius,
+          backgroundColor: isExpanded ? `${theme.palette.primary.main}10` : "transparent",
+          transition: "all 0.2s ease",
+          transform: isExpanded ? "translateY(-100%)" : "translateY(0)",
+          "&:hover": {
+            backgroundColor: `${theme.palette.primary.main}10`,
+          },
+        }}
+      >
+        <Avatar
+          sx={{
+            width: 35,
+            height: 35,
+            backgroundColor: getAvatarColor(user.email),
+            color: "white",
+            fontWeight: 600,
+            fontSize: "16px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          }}
+        >
+          {getInitials(user.email)}
+        </Avatar>
+        
+        <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+          <Typography
+            sx={{
+              fontSize: "16px",
+              fontWeight: 600,
+              color: "#333",
+              lineHeight: 1.2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {user.email.split('@')[0]}
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: "14px",
+              color: "#666",
+              lineHeight: 1.2,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {user.email}
+          </Typography>
+        </Box>
+
+        <KeyboardArrowDownIcon
+          sx={{
+            color: "#666",
+            transition: "transform 0.2s ease",
+            transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        />
+      </Box>
+
+      {/* Dropdown con opción de logout */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: "white",
+          borderRadius: theme.shape.borderRadius,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          overflow: "hidden",
+          transition: "all 0.2s ease",
+          opacity: isExpanded ? 1 : 0,
+          transform: isExpanded ? "translateY(0)" : "translateY(-100%)",
+          pointerEvents: isExpanded ? "auto" : "none",
+          zIndex: 1000,
+        }}
+      >
+        <Box
+          onClick={handleLogout}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            padding: "12px 16px",
+            cursor: "pointer",
+            transition: "background-color 0.2s ease",
+            "&:hover": {
+              backgroundColor: "#f5f5f5",
+            },
+          }}
+        >
+          <LogoutIcon sx={{ fontSize: 20, color: "#666" }} />
+          <Typography
+            sx={{
+              fontSize: "14px",
+              color: "#666",
+              fontWeight: 500,
+            }}
+          >
+            {t("layout.signOut")}
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+export default UserProfile; 
