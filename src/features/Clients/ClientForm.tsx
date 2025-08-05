@@ -3,13 +3,23 @@ import { useTranslation } from "react-i18next";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import FTextField from "../../components/FTextField";
+import FSelect from "../../components/FSelect";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate, useParams } from "react-router-dom";
-import { createClient, createMultipleEntities, fetchClientById, updateClient, fetchEntitiesByClientId, deleteEntitiesByClientId } from "../../services/supabaseService";
+import {
+  createClient,
+  createMultipleEntities,
+  fetchClientById,
+  updateClient,
+  fetchEntitiesByClientId,
+  deleteEntitiesByClientId,
+} from "../../services/supabaseService";
 import SimpleTable from "../../components/SimpleTable";
 import FButton from "../../components/FButton/FButton";
 import LoadingFade from "../../components/LoadingFade";
+import { useIndustryOptions } from "../../hooks/useIndustryOptions";
+import { useEntityTypeOptions } from "../../hooks/useEntityTypeOptions";
 
 interface RelatedEntity {
   id: string;
@@ -32,6 +42,13 @@ const ClientForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Hook para obtener las opciones del enum industry
+  const { options: industryOptions, loading: industryLoading } =
+    useIndustryOptions();
+  
+  // Hook para obtener las opciones del enum entity_type
+  const { options: entityTypeOptions } = useEntityTypeOptions();
+
   // Cargar datos del cliente si estamos editando
   useEffect(() => {
     if (isEditing && id) {
@@ -43,29 +60,29 @@ const ClientForm = () => {
             setClientName(client.name);
             setEin(client.ein);
             setIndustry(client.industry);
-            
+
             // Cargar las entities del cliente
             const entities = await fetchEntitiesByClientId(client.id);
-            console.log('Entities loaded for client:', client.id, entities);
-            
+            console.log("Entities loaded for client:", client.id, entities);
+
             // Convertir las entities de Supabase al formato local
-            const localEntities: RelatedEntity[] = entities.map(entity => ({
+            const localEntities: RelatedEntity[] = entities.map((entity) => ({
               id: entity.id.toString(),
               name: entity.name,
-              keyword: entity.keywords.join(', '), // Convertir array a string
+              keyword: entity.keywords.join(", "), // Convertir array a string
               type: entity.type,
             }));
-            
+
             setRelatedEntities(localEntities);
           }
         } catch (error) {
-          console.error('Error loading client:', error);
+          console.error("Error loading client:", error);
           alert(t("clients.loadError"));
         } finally {
           setLoading(false);
         }
       };
-      
+
       loadClient();
     }
   }, [isEditing, id, t]);
@@ -74,14 +91,14 @@ const ClientForm = () => {
     if (e) {
       e.preventDefault();
     }
-    
-    if (!clientName || !ein) {
+
+    if (!clientName || !ein || !industry) {
       alert(t("clients.validationError"));
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       if (isEditing && id) {
         // Actualizar cliente existente
@@ -98,14 +115,16 @@ const ClientForm = () => {
 
         // Crear las nuevas entities si hay alguna
         if (relatedEntities.length > 0) {
-          const entitiesToCreate = relatedEntities.map(entity => ({
+          const entitiesToCreate = relatedEntities.map((entity) => ({
             name: entity.name,
-            keywords: entity.keyword.split(',').map(k => k.trim()), // Convertir string a array
+            keywords: entity.keyword.split(",").map((k) => k.trim()), // Convertir string a array
             type: entity.type,
             client_id: parseInt(id),
           }));
 
-          const createdEntities = await createMultipleEntities(entitiesToCreate);
+          const createdEntities = await createMultipleEntities(
+            entitiesToCreate
+          );
           console.log("Nuevas entities creadas:", createdEntities);
         }
       } else {
@@ -120,23 +139,24 @@ const ClientForm = () => {
 
         // Crear las entities si hay alguna
         if (relatedEntities.length > 0) {
-          const entitiesToCreate = relatedEntities.map(entity => ({
+          const entitiesToCreate = relatedEntities.map((entity) => ({
             name: entity.name,
-            keywords: entity.keyword.split(',').map(k => k.trim()), // Convertir string a array
+            keywords: entity.keyword.split(",").map((k) => k.trim()), // Convertir string a array
             type: entity.type,
             client_id: newClient.id,
           }));
 
-          const createdEntities = await createMultipleEntities(entitiesToCreate);
+          const createdEntities = await createMultipleEntities(
+            entitiesToCreate
+          );
           console.log("Entities creadas:", createdEntities);
         }
       }
 
       // Navegar de vuelta a la lista
-      navigate('/clients');
-      
+      navigate("/clients");
     } catch (error) {
-      console.error('Error guardando cliente:', error);
+      console.error("Error guardando cliente:", error);
       alert(t("clients.saveError"));
     } finally {
       setIsSubmitting(false);
@@ -150,107 +170,147 @@ const ClientForm = () => {
       keyword: "",
       type: "",
     };
-    setRelatedEntities(prev => [...prev, newEntity]);
+    setRelatedEntities((prev) => [...prev, newEntity]);
   }, []);
 
-  const updateEntity = useCallback((id: string, field: keyof RelatedEntity, value: string) => {
-    console.log('updateEntity called:', id, field, value);
-    setRelatedEntities(prev =>
-      prev.map(entity =>
-        entity.id === id ? { ...entity, [field]: value } : entity
-      )
-    );
-  }, []);
+  const updateEntity = useCallback(
+    (id: string, field: keyof RelatedEntity, value: string) => {
+      console.log("updateEntity called:", id, field, value);
+      setRelatedEntities((prev) =>
+        prev.map((entity) =>
+          entity.id === id ? { ...entity, [field]: value } : entity
+        )
+      );
+    },
+    []
+  );
 
   const deleteEntity = useCallback((id: string) => {
-    setRelatedEntities(prev => prev.filter(entity => entity.id !== id));
+    setRelatedEntities((prev) => prev.filter((entity) => entity.id !== id));
   }, []);
 
   // Definir las columnas para SimpleTable de Related Entities
-  const entityColumns: ColumnDef<RelatedEntity>[] = useMemo(() => [
-    {
-      accessorKey: "name",
-      header: t("clients.entityName").toUpperCase(),
-      cell: ({ row }) => (
-        <FTextField
-          label=""
-          value={row.getValue("name")}
-          onChange={(value) => updateEntity(row.original.id, "name", value)}
-          hideLabel
-        />
-      ),
-      size: 300,
-    },
-    {
-      accessorKey: "keyword",
-      header: t("clients.entityKeyword").toUpperCase(),
-      cell: ({ row }) => {
-        const keywordValue = row.getValue("keyword") as string;
-        const keywords = keywordValue ? keywordValue.split(',').map((k: string) => k.trim()).filter((k: string) => k) : [];
-        
-        return (
+  const entityColumns: ColumnDef<RelatedEntity>[] = useMemo(
+    () => [
+      {
+        accessorKey: "name",
+        header: t("clients.entityName").toUpperCase(),
+        cell: ({ row }) => (
           <FTextField
             label=""
-            value=""
-            enableChips={true}
-            chips={keywords}
-            onChipsChange={(newChips) => {
-              const keywordsString = newChips.join(', ');
-              updateEntity(row.original.id, "keyword", keywordsString);
-            }}
-            placeholder="clients.keywordPlaceholder"
+            value={row.getValue("name")}
+            onChange={(value) => updateEntity(row.original.id, "name", value)}
             hideLabel
+            placeholder="clients.entityNamePlaceholder"
           />
-        );
+        ),
+        size: 300,
       },
-      size: 400,
-    },
-    {
+      {
+        accessorKey: "keyword",
+        header: t("clients.entityKeyword").toUpperCase(),
+        cell: ({ row }) => {
+          const keywordValue = row.getValue("keyword") as string;
+          const keywords = keywordValue
+            ? keywordValue
+                .split(",")
+                .map((k: string) => k.trim())
+                .filter((k: string) => k)
+            : [];
+
+          return (
+            <FTextField
+              label=""
+              value=""
+              enableChips={true}
+              chips={keywords}
+              onChipsChange={(newChips) => {
+                const keywordsString = newChips.join(", ");
+                updateEntity(row.original.id, "keyword", keywordsString);
+              }}
+              placeholder="clients.keywordPlaceholder"
+              hideLabel
+            />
+          );
+        },
+        size: 400,
+      },
+          {
       accessorKey: "type",
       header: t("clients.entityType").toUpperCase(),
       cell: ({ row }) => (
-        <FTextField
+        <FSelect
           label=""
+          options={[
+            { value: "", label: t("clients.selectType") },
+            ...entityTypeOptions.map(option => ({
+              value: option,
+              label: option
+            }))
+          ]}
           value={row.getValue("type")}
           onChange={(value) => updateEntity(row.original.id, "type", value)}
           hideLabel
+          placeholder="clients.selectType"
+          sx={{ width: "100%" }}
         />
       ),
       size: 200,
     },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) => (
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <Button
-            onClick={() => deleteEntity(row.original.id)}
-            size="small"
-            sx={{ 
-              color: "#d32f2f",
-              minWidth: "auto",
-              padding: "4px 8px",
-              "&:hover": {
-                backgroundColor: "rgba(211, 47, 47, 0.1)",
-              }
-            }}
-          >
-            <DeleteIcon fontSize="small" />
-          </Button>
-        </Box>
-      ),
-      size: 100,
-    },
-  ], [t, updateEntity, deleteEntity]);
+      {
+        id: "actions",
+        header: "",
+        cell: ({ row }) => (
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Button
+              onClick={() => deleteEntity(row.original.id)}
+              size="small"
+              sx={{
+                color: "#d32f2f",
+                minWidth: "auto",
+                padding: "4px 8px",
+                "&:hover": {
+                  backgroundColor: "rgba(211, 47, 47, 0.1)",
+                },
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </Button>
+          </Box>
+        ),
+        size: 100,
+      },
+    ],
+    [t, updateEntity, deleteEntity]
+  );
 
   return (
     <LoadingFade loading={loading}>
-      <Box sx={{ backgroundColor: "white", minHeight: "50vh", padding: 24, borderRadius: theme.shape.borderRadius }}>
-        <Typography component="h1" sx={{ fontSize: 24, fontWeight: 700, mb: 20 }}>
+      <Box
+        sx={{
+          backgroundColor: "white",
+          minHeight: "50vh",
+          padding: 24,
+          borderRadius: theme.shape.borderRadius,
+        }}
+      >
+        <Typography
+          component="h1"
+          sx={{ fontSize: 24, fontWeight: 700, mb: 20 }}
+        >
           {isEditing ? t("clients.editTitle") : t("clients.registerTitle")}
         </Typography>
-        
-        <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 20 }}>
+
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 20,
+          }}
+        >
           <Box sx={{ display: "flex", flexDirection: "column", gap: 20 }}>
             <FTextField
               sx={{ width: "70%" }}
@@ -260,7 +320,7 @@ const ClientForm = () => {
               onChange={setClientName}
               required
             />
-            
+
             <Box sx={{ display: "flex", gap: 40 }}>
               <FTextField
                 label="clients.ein"
@@ -269,19 +329,34 @@ const ClientForm = () => {
                 onChange={setEin}
                 required
               />
-              
-              <FTextField
+
+              <FSelect
                 label="clients.industry"
-                placeholder="clients.industryPlaceholder"
+                options={[
+                  { value: "", label: t("clients.selectIndustry") },
+                  ...industryOptions.map((option) => ({
+                    value: option,
+                    label: option,
+                  })),
+                ]}
                 value={industry}
                 onChange={setIndustry}
+                placeholder="clients.industryPlaceholder"
+                sx={{ width: "100%" }}
               />
             </Box>
           </Box>
 
           {/* Related Entities Section */}
           <Box sx={{ mb: 20, mt: 20 }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 20 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 20,
+              }}
+            >
               <Typography component="h2" sx={{ fontSize: 18, fontWeight: 700 }}>
                 {t("clients.relatedEntities")}
               </Typography>
@@ -301,7 +376,6 @@ const ClientForm = () => {
                 {t("clients.addEntity")}
               </Button>
             </Box>
-            
             <SimpleTable
               data={relatedEntities}
               columns={entityColumns}
@@ -314,10 +388,11 @@ const ClientForm = () => {
               t={t}
             />
           </Box>
-          
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3, gap: 20 }}>
+          <Box
+            sx={{ display: "flex", justifyContent: "flex-end", mt: 3, gap: 20 }}
+          >
             <FButton
-              onClick={() => navigate('/clients')}
+              onClick={() => navigate("/clients")}
               variant="outlined"
               color="secondary"
               disabled={isSubmitting}
@@ -325,8 +400,14 @@ const ClientForm = () => {
             />
             <FButton
               onClick={() => handleSubmit()}
-              disabled={isSubmitting}
-              title={isSubmitting ? t("clients.saving") : (isEditing ? t("clients.updateButton") : t("clients.registerButton"))}
+              disabled={isSubmitting || !clientName || !ein || !industry}
+              title={
+                isSubmitting
+                  ? t("clients.saving")
+                  : isEditing
+                  ? t("clients.updateButton")
+                  : t("clients.registerButton")
+              }
             />
           </Box>
         </Box>
@@ -335,4 +416,4 @@ const ClientForm = () => {
   );
 };
 
-export default ClientForm; 
+export default ClientForm;

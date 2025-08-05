@@ -28,6 +28,11 @@ import {
   Chip,
   Select,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
 } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 import ExpandMore from "@mui/icons-material/ExpandMore";
@@ -38,6 +43,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchField from "./SearchField";
 import FSelect from "./FSelect";
+import FButton from "./FButton/FButton";
 import ConfirmDialog from "./ConfirmDialog";
 import { useCategories } from "../hooks/useCategories";
 
@@ -61,7 +67,10 @@ interface SimpleTableProps<TData extends TableData = TableData> {
     newValue: string | number
   ) => Promise<void>;
   onRowDelete?: (transactionIds: string[]) => Promise<void>;
-  onBulkUpdate?: (transactionIds: string[], updates: { [key: string]: string | number }) => Promise<void>;
+  onBulkUpdate?: (
+    transactionIds: string[],
+    updates: { [key: string]: string | number }
+  ) => Promise<void>;
   editable?: boolean;
   searchable?: boolean;
   sortable?: boolean;
@@ -71,6 +80,7 @@ interface SimpleTableProps<TData extends TableData = TableData> {
   disableSearch?: boolean;
   banks?: Bank[];
   t?: (key: string) => string;
+  showPendingReview?: boolean;
 }
 
 // Estilos personalizados
@@ -98,7 +108,7 @@ const StyledTableContainer = styled(TableContainer)(() => ({
       },
     },
     "& .MuiTableCell-body": {
-      borderBottom: "1px solid #e0e0e0",
+      borderBottom: "1px solid #d1d5db",
       color: "#6B7280",
       padding: "12px 16px",
       fontSize: 14,
@@ -130,7 +140,6 @@ const SearchContainer = styled(Box)(() => ({
   display: "flex",
   alignItems: "center",
   gap: 16,
-  padding: "20px",
   backgroundColor: "white",
   justifyContent: "flex-end",
 }));
@@ -169,12 +178,17 @@ export default function SimpleTable<TData extends TableData = TableData>({
   disableSearch = false,
   banks,
   t: externalT,
+  showPendingReview = false,
 }: SimpleTableProps<TData>) {
   console.log("columns", columns);
   const theme = useTheme();
   const { t: internalT } = useTranslation();
   const t = externalT || internalT;
-  const { categories, subcategories, loading: categoriesLoading } = useCategories();
+  const {
+    categories,
+    subcategories,
+    loading: categoriesLoading,
+  } = useCategories();
   const [globalFilter, setGlobalFilter] = useState("");
   const [editingCell, setEditingCell] = useState<{
     rowId: string;
@@ -246,33 +260,7 @@ export default function SimpleTable<TData extends TableData = TableData>({
     }));
   }, [columns, sortable]);
 
-  // Función de filtrado global simplificada
-  const globalFilterFn = useCallback(
-    (row: Row<TableData>, columnId: string, filterValue: string) => {
-      // Si no hay filtro, mostrar todas las filas
-      if (!filterValue || filterValue.trim() === "") {
-        return true;
-      }
 
-      // Filtrar en todas las columnas
-      const value = row.getValue(columnId);
-      if (value == null) return false;
-
-      const searchValue = filterValue.toLowerCase();
-      const cellValue = String(value).toLowerCase();
-
-      // Manejar valores numéricos formateados
-      if (typeof value === "number") {
-        // También buscar en el valor numérico sin formato
-        const numericValue = value.toString();
-        if (numericValue.includes(searchValue)) return true;
-      }
-
-      // Buscar en el valor formateado
-      return cellValue.includes(searchValue);
-    },
-    []
-  );
 
   // Datos filtrados por filtros personalizados
   const filteredData = useMemo(() => {
@@ -296,8 +284,8 @@ export default function SimpleTable<TData extends TableData = TableData>({
       }
 
       // Filtro por tipo de cuenta
-      if (activeFilters.accountType && rowData.accountType) {
-        if (rowData.accountType !== activeFilters.accountType) {
+      if (activeFilters.accountType && rowData.subcategory) {
+        if (rowData.subcategory !== activeFilters.accountType) {
           return false;
         }
       }
@@ -310,8 +298,8 @@ export default function SimpleTable<TData extends TableData = TableData>({
       }
 
       // Filtro por cuenta
-      if (activeFilters.account && rowData.account) {
-        if (rowData.account !== activeFilters.account) {
+      if (activeFilters.account && rowData.category) {
+        if (rowData.category !== activeFilters.account) {
           return false;
         }
       }
@@ -330,14 +318,14 @@ export default function SimpleTable<TData extends TableData = TableData>({
   // Extraer opciones únicas de accountType y bank
   const accountTypeOptions = useMemo(() => {
     const uniqueAccountTypes = [
-      ...new Set(data.map((row) => row.accountType).filter(Boolean)),
+      ...new Set(data.map((row) => row.subcategory).filter(Boolean)),
     ];
     return uniqueAccountTypes.sort();
   }, [data]);
 
   const accountOptions = useMemo(() => {
     const uniqueAccounts = [
-      ...new Set(data.map((row) => row.account).filter(Boolean)),
+      ...new Set(data.map((row) => row.category).filter(Boolean)),
     ];
     return uniqueAccounts.sort();
   }, [data]);
@@ -374,7 +362,44 @@ export default function SimpleTable<TData extends TableData = TableData>({
       rowSelection,
     },
     onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn,
+    globalFilterFn: (row, columnId, filterValue) => {
+      // Si no hay filtro, mostrar todas las filas
+      if (!filterValue || filterValue.trim() === "") {
+        return true;
+      }
+
+      const searchValue = filterValue.toLowerCase();
+      
+      // Buscar en todas las columnas de la fila
+      for (const column of tableColumns) {
+        if (column.id === 'select') continue; // Saltar columna de selección
+        
+        const value = row.getValue(column.id);
+        if (value == null) continue;
+
+        const cellValue = String(value).toLowerCase();
+
+        // Manejar valores numéricos
+        if (typeof value === "number") {
+          // Buscar en el valor numérico sin formato
+          const numericValue = value.toString();
+          if (numericValue.includes(searchValue)) return true;
+          
+          // Buscar en el valor formateado (con puntos y comas)
+          const formattedValue = value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          if (formattedValue.toLowerCase().includes(searchValue)) return true;
+          
+          // Buscar en el valor sin decimales
+          const integerValue = Math.floor(value).toString();
+          if (integerValue.includes(searchValue)) return true;
+        }
+
+        // Buscar en el valor formateado
+        if (cellValue.includes(searchValue)) return true;
+      }
+
+      return false;
+    },
   });
 
   // Obtener filas seleccionadas
@@ -477,8 +502,8 @@ export default function SimpleTable<TData extends TableData = TableData>({
   const handleCellClick = (row: Row<TableData>, columnId: string) => {
     if (!editable) return;
 
-    // No permitir edición en la columna de checkbox
-    if (columnId === "select") return;
+    // No permitir edición en la columna de checkbox, transaction_id y balance
+    if (columnId === "select" || columnId === "transaction_id" || columnId === "balance") return;
 
     const value = row.getValue(columnId);
     setEditingCell({ rowId: row.id, columnId });
@@ -550,7 +575,7 @@ export default function SimpleTable<TData extends TableData = TableData>({
       try {
         await onCellUpdate(oldRow.transaction_id, editingCell.columnId, value);
       } catch (error) {
-        console.error('Error updating cell:', error);
+        console.error("Error updating cell:", error);
         return;
       }
     }
@@ -577,7 +602,9 @@ export default function SimpleTable<TData extends TableData = TableData>({
     if (!onRowDelete || selectedRows.length === 0) return;
     setDeleting(true);
     try {
-      const transactionIds = selectedRows.map(row => row.original.transaction_id).filter(Boolean);
+      const transactionIds = selectedRows
+        .map((row) => row.original.transaction_id)
+        .filter(Boolean);
       if (transactionIds.length === 0) {
         setDeleting(false);
         return;
@@ -585,7 +612,10 @@ export default function SimpleTable<TData extends TableData = TableData>({
       await onRowDelete(transactionIds);
       setRowSelection({});
     } catch (error) {
-      alert(t('table.deleteError') || 'Error al eliminar las transacciones. Por favor, intenta de nuevo.');
+      alert(
+        t("table.deleteError") ||
+          "Error al eliminar las transacciones. Por favor, intenta de nuevo."
+      );
     } finally {
       setDeleting(false);
       setConfirmOpen(false);
@@ -600,19 +630,21 @@ export default function SimpleTable<TData extends TableData = TableData>({
 
   // Opciones para el select de account (category)
   const categorySelectOptions = useMemo(
-    () => categories.map(category => ({
-      label: category.name,
-      value: category.name
-    })),
+    () =>
+      categories.map((category) => ({
+        label: category.name,
+        value: category.name,
+      })),
     [categories]
   );
 
   // Opciones para el select de account_type (subcategory)
   const subcategorySelectOptions = useMemo(
-    () => subcategories.map(subcategory => ({
-      label: subcategory.name,
-      value: subcategory.name
-    })),
+    () =>
+      subcategories.map((subcategory) => ({
+        label: subcategory.name,
+        value: subcategory.name,
+      })),
     [subcategories]
   );
 
@@ -644,21 +676,25 @@ export default function SimpleTable<TData extends TableData = TableData>({
 
     try {
       // Extraer los transaction_ids de las filas seleccionadas
-      const transactionIds = selectedRows.map(row => row.original.transaction_id).filter(Boolean);
-      
+      const transactionIds = selectedRows
+        .map((row) => row.original.transaction_id)
+        .filter(Boolean);
+
       if (transactionIds.length === 0) {
-        console.warn('No se encontraron transaction_ids válidos para actualizar');
+        console.warn(
+          "No se encontraron transaction_ids válidos para actualizar"
+        );
         setBulkEditMenuAnchor(null);
         return;
       }
 
       // Preparar las actualizaciones basadas en los valores seleccionados
       const updates: { [key: string]: string | number } = {};
-      
+
       if (bulkAccount) {
         updates.category = bulkAccount;
       }
-      
+
       if (bulkAccountType) {
         updates.subcategory = bulkAccountType;
       }
@@ -666,7 +702,7 @@ export default function SimpleTable<TData extends TableData = TableData>({
       // Solo actualizar si hay cambios
       if (Object.keys(updates).length > 0) {
         await onBulkUpdate(transactionIds, updates);
-        console.log('Transacciones actualizadas exitosamente en bulk');
+        console.log("Transacciones actualizadas exitosamente en bulk");
       }
 
       // Limpiar el estado
@@ -674,9 +710,14 @@ export default function SimpleTable<TData extends TableData = TableData>({
       setBulkAccountType("");
       setBulkEditMenuAnchor(null);
       
+      // Deseleccionar todas las filas
+      setRowSelection({});
     } catch (error) {
-      console.error('Error actualizando transacciones en bulk:', error);
-      alert(t('table.bulkUpdateError') || 'Error al actualizar las transacciones. Por favor, intenta de nuevo.');
+      console.error("Error actualizando transacciones en bulk:", error);
+      alert(
+        t("table.bulkUpdateError") ||
+          "Error al actualizar las transacciones. Por favor, intenta de nuevo."
+      );
     }
   };
 
@@ -884,39 +925,70 @@ export default function SimpleTable<TData extends TableData = TableData>({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  return (
-    <>
-      {/* Barra de búsqueda - se oculta cuando hay filas seleccionadas */}
-      {searchable && !disableSearch && selectedRows.length === 0 && (
-      <Box sx={{ minHeight: 90, backgroundColor: "white"}}>
+  // Estado para el modal de pending review
+  const [pendingReviewOpen, setPendingReviewOpen] = useState(false);
 
-        <SearchContainer>
-          <SearchField
-            value={searchValue}
-            onChange={handleSearchChange}
-            placeholder={t("table.searchAllColumns")}
-          />
-          {!disableFilter && (
-            <IconButton
-              onClick={handleFilterMenuOpen}
+  return (
+    <Box sx={{ padding: "24px" }}>
+              {/* Barra de búsqueda - se oculta cuando hay filas seleccionadas */}
+        {searchable && !disableSearch && selectedRows.length === 0 && (
+          <Box sx={{ backgroundColor: "white", marginBottom: "20px", minHeight: "48px", display: "flex", alignItems: "center" }}>
+            <Box
               sx={{
-                color: filterMenuAnchor ? "primary.main" : "text.secondary",
-                "&:hover": {
-                  backgroundColor: "action.hover",
-                },
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "100%",
               }}
             >
-              <FilterList />
-            </IconButton>
-          )}
-          
-        </SearchContainer>
-      </Box>
-      )}
+              <Box sx={{ minWidth: showPendingReview ? "auto" : 0 }}>
+                {showPendingReview && (
+                  <FButton
+                    variant="outlined"
+                    title={t("table.pendingReview")}
+                    onClick={() => setPendingReviewOpen(true)}
+                  />
+                )}
+              </Box>
+              <SearchContainer>
+                <SearchField
+                  value={searchValue}
+                  onChange={handleSearchChange}
+                  placeholder={t("table.searchAllColumns")}
+                />
+                {!disableFilter && (
+                  <IconButton
+                    onClick={handleFilterMenuOpen}
+                    sx={{
+                      minHeight: 48,
+                      minWidth: 48,
+                      border: "1px solid #ccc",
+                      borderRadius: theme.shape.borderRadius,
+                      color: filterMenuAnchor ? "primary.main" : "text.secondary",
+                      "&:hover": {
+                        backgroundColor: "action.hover",
+                      },
+                    }}
+                  >
+                    <FilterList />
+                  </IconButton>
+                )}
+              </SearchContainer>
+            </Box>
+          </Box>
+        )}
 
-      {/* Barra de eliminación - se muestra cuando hay filas seleccionadas */}
-      {selectedRows.length > 0 && (
-        <Box sx={{ paddingLeft: 14, borderBottom: "1px solid #e0e0e0", display: "flex", alignItems: "center", height: 90, gap: 20 }}>
+        {/* Barra de eliminación - se muestra cuando hay filas seleccionadas */}
+        {selectedRows.length > 0 && (
+                      <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 20,
+                marginBottom: "20px",
+                minHeight: "48px",
+              }}
+            >
           <Button
             onClick={() => setConfirmOpen(true)}
             sx={{
@@ -942,34 +1014,33 @@ export default function SimpleTable<TData extends TableData = TableData>({
               ? t("table.deleteOneRow")
               : t("table.deleteManyRows", { count: selectedRows.length })}
           </Button>
-                     <Button
-             onClick={handleBulkEditMenuOpen}
-             sx={{
-               display: "flex",
-               alignItems: "center",
-               gap: 1,
-               color: theme.palette.primary.main,
-               fontWeight: 500,
-               fontSize: "14px",
-               cursor: "pointer",
-               border: `1px solid ${theme.palette.primary.main}`,
-               padding: 8,
-               borderRadius: 4,
-               minWidth: 40,
-               "&:hover": {
-                 backgroundColor: theme.palette.primary.main,
-                 color: "#fff",
-               },
-             }}
-           >
-             <EditIcon sx={{ fontSize: 20 }} />
-             {selectedRows.length === 1
-               ? t("table.editOneRow")
-               : t("table.editManyRows", { count: selectedRows.length })}
-           </Button>
+          <Button
+            onClick={handleBulkEditMenuOpen}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              color: theme.palette.primary.main,
+              fontWeight: 500,
+              fontSize: "14px",
+              cursor: "pointer",
+              border: `1px solid ${theme.palette.primary.main}`,
+              padding: 8,
+              borderRadius: 4,
+              minWidth: 40,
+              "&:hover": {
+                backgroundColor: theme.palette.primary.main,
+                color: "#fff",
+              },
+            }}
+          >
+            <EditIcon sx={{ fontSize: 20 }} />
+            {selectedRows.length === 1
+              ? t("table.editOneRow")
+              : t("table.editManyRows", { count: selectedRows.length })}
+          </Button>
         </Box>
       )}
-
 
       {/* Chips de filtros activos */}
       {(activeFilters.dateRange.start ||
@@ -1731,15 +1802,216 @@ export default function SimpleTable<TData extends TableData = TableData>({
       <ConfirmDialog
         open={confirmOpen}
         title={t("table.deleteConfirmTitle")}
-        description={selectedRows.length === 1
-          ? t("table.deleteConfirmOne")
-          : t("table.deleteConfirmMany", { count: selectedRows.length })}
+        description={
+          selectedRows.length === 1
+            ? t("table.deleteConfirmOne")
+            : t("table.deleteConfirmMany", { count: selectedRows.length })
+        }
         confirmText={t("table.delete")}
         cancelText={t("table.cancel")}
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleDeleteRows}
         loading={deleting}
       />
-    </>
+
+      {/* Modal de Pending Review */}
+      <Dialog
+        open={pendingReviewOpen}
+        onClose={() => setPendingReviewOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontSize: "22px", fontWeight: 600 }}>Pending Review</DialogTitle>
+        <DialogContent sx={{ maxHeight: "70vh", overflow: "auto" }}>
+          <Box sx={{ mt: 2 }}>
+            {/* Mock data de warnings agrupados por filename */}
+            {(() => {
+              const warnings = [
+                {
+                  fileName: "archivo1.pdf",
+                  transactionId: "TXN001",
+                  description: "Revisar detalles",
+                },
+                {
+                  fileName: "archivo1.pdf",
+                  transactionId: "TXN002",
+                  description: "Formato de fecha inválido",
+                },
+                {
+                  fileName: "archivo1.pdf",
+                  transactionId: "TXN003",
+                  description: "Campo obligatorio faltante",
+                },
+                {
+                  fileName: "archivo2.xlsx",
+                  transactionId: "TXN004",
+                  description: "Revisar valor de la columna credito",
+                },
+                {
+                  fileName: "archivo2.xlsx",
+                  transactionId: "TXN005",
+                  description: "Monto fuera de rango",
+                },
+                {
+                  fileName: "archivo2.xlsx",
+                  transactionId: "TXN006",
+                  description: "Transacción duplicada",
+                },
+                {
+                  fileName: "archivo3.csv",
+                  transactionId: "TXN007",
+                  description: "Revisar fecha",
+                },
+                {
+                  fileName: "archivo3.csv",
+                  transactionId: "TXN008",
+                  description: "Formato de archivo no reconocido",
+                },
+                {
+                  fileName: "archivo3.csv",
+                  transactionId: "TXN009",
+                  description: "Campo de descripción vacío",
+                },
+                {
+                  fileName: "archivo3.csv",
+                  transactionId: "TXN010",
+                  description: "Valor de crédito inválido",
+                },
+                {
+                  fileName: "archivo4.txt",
+                  transactionId: "TXN011",
+                  description: "Archivo no soportado",
+                },
+                {
+                  fileName: "archivo4.txt",
+                  transactionId: "TXN012",
+                  description: "Encoding no reconocido",
+                },
+                {
+                  fileName: "archivo5.xls",
+                  transactionId: "TXN013",
+                  description: "Monto negativo detectado",
+                },
+                {
+                  fileName: "archivo5.xls",
+                  transactionId: "TXN014",
+                  description: "Fecha futura detectada",
+                },
+                {
+                  fileName: "archivo6.json",
+                  transactionId: "TXN015",
+                  description: "Formato JSON inválido",
+                },
+              ];
+
+              // Agrupar por fileName
+              const groupedWarnings = warnings.reduce((acc, warning) => {
+                if (!acc[warning.fileName]) {
+                  acc[warning.fileName] = [];
+                }
+                acc[warning.fileName].push(warning);
+                return acc;
+              }, {} as Record<string, typeof warnings>);
+
+              return Object.entries(groupedWarnings).map(
+                ([fileName, fileWarnings]) => (
+                  <Box key={fileName} sx={{ mb: "20px" }}>
+                    <Typography
+                      sx={{ mb: 8, fontWeight: 600, fontSize: "1.25rem" }}
+                    >
+                      {fileName}
+                    </Typography>
+                                         <Box
+                       sx={{
+                         border: "1px solid #e0e0e0",
+                         borderRadius: theme.shape.borderRadius,
+                         overflow: "hidden",
+                         boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                       }}
+                     >
+                      <Table sx={{ tableLayout: "fixed", width: "100%" }}>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell
+                              sx={{
+                                fontWeight: 600,
+                                backgroundColor: "#f8f9fa",
+                                borderBottom: "2px solid #e0e0e0",
+                                padding: "12px 16px",
+                                fontSize: "14px",
+                                width: "20%",
+                              }}
+                            >
+                              Transaction ID
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                fontWeight: 600,
+                                backgroundColor: "#f8f9fa",
+                                borderBottom: "2px solid #e0e0e0",
+                                padding: "12px 16px",
+                                fontSize: "14px",
+                                width: "70%",
+                              }}
+                            >
+                              Description
+                            </TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {fileWarnings.map((warning, index) => (
+                            <TableRow
+                              key={index}
+                              sx={{
+                                "&:hover": {
+                                  backgroundColor: "#f5f5f5",
+                                },
+                                "&:nth-of-type(even)": {
+                                  backgroundColor: "#fafafa",
+                                },
+                              }}
+                            >
+                                                             <TableCell
+                                 sx={{
+                                   borderRight: "1px solid #e0e0e0",
+                                   padding: "12px 16px",
+                                   fontSize: "13px",
+                                   fontFamily: "monospace",
+                                   fontWeight: 500,
+                                   color: "#6B7280",
+                                   width: "30%",
+                                 }}
+                               >
+                                 {warning.transactionId}
+                               </TableCell>
+                               <TableCell
+                                 sx={{
+                                   padding: "12px 16px",
+                                   fontSize: "13px",
+                                   color: "#6B7280",
+                                 }}
+                               >
+                                 {warning.description}
+                               </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </Box>
+                  </Box>
+                )
+              );
+            })()}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <FButton
+            onClick={() => setPendingReviewOpen(false)}
+            title="Close"
+            variant="outlined"
+          />
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }

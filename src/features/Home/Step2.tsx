@@ -161,7 +161,6 @@ const Step2 = ({ batchResult, isProcessing, banks }: Step2Props) => {
     <Box sx={{ 
       backgroundColor: "white", 
       borderRadius: theme.shape.borderRadius,
-      padding: "12px",
       overflow: "hidden"
     }}>
       <SimpleTable
@@ -177,6 +176,7 @@ const Step2 = ({ batchResult, isProcessing, banks }: Step2Props) => {
         pagination={true}
         resizable={true}
         banks={banks}
+        showPendingReview={true}
       />
     </Box>
   );

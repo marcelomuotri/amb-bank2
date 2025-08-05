@@ -17,9 +17,12 @@
     "clients.einPlaceholder": "Ingresa el EIN",
     "clients.industry": "Industria",
     "clients.industryPlaceholder": "Ingresa la industria",
+    "clients.selectIndustry": "Seleccionar Industria",
+    "clients.selectType": "Seleccionar Tipo",
     "clients.registerButton": "Registrar Cliente",
     "clients.relatedEntities": "Entidades relacionadas",
     "clients.entityName": "Nombre",
+    "clients.entityNamePlaceholder": "Ingresa el nombre de la entidad",
     "clients.entityKeyword": "Palabra clave",
     "clients.keywordPlaceholder": "Escribe y presiona Enter",
     "clients.entityType": "Tipo",
@@ -104,6 +107,7 @@
     "table.editBulk": "Edición masiva",
     "table.editManyRows": "Editar {{count}} filas",
     "table.editOneRow": "Editar una fila",
+    "table.pendingReview": "Revisión Pendiente",
     "table.from": "Desde",
     "table.rowsPerPage": "Filas por página",
     "table.search": "Buscar...",
@@ -116,5 +120,9 @@
     "upload": "Subir",
     "uploadImage.dragAndDrop": "Arrastra y suelta archivos aquí",
     "uploadImage.dragAndDropSubtitle": "o haz clic para explorar",
-    "bulkUpdateError": "Error al actualizar las transacciones. Por favor, intenta de nuevo."
+    "bulkUpdateError": "Error al actualizar las transacciones. Por favor, intenta de nuevo.",
+    "subscription.totalAvailable": "Total disponible:",
+    "subscription.creditsAvailable": "Créditos disponibles:",
+    "subscription.usedThisMonth": "Usados este mes:",
+    "subscription.renewsOn": "Se renuevan:"
 }

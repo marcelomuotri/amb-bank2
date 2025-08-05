@@ -6,7 +6,7 @@ import { t } from "i18next";
 import { useClients } from "../../hooks/useClients";
 import FSelect from "../../components/FSelect";
 import FButton from "../../components/FButton/FButton";
-import { searchTransactionsByClient } from "../../services/supabaseService";
+import { searchTransactionsByClient, updateMultipleTransactions } from "../../services/supabaseService";
 
 // Tipo para las transacciones de Supabase
 interface SupabaseTransaction {
@@ -61,8 +61,10 @@ const Search = () => {
     updates: { [key: string]: string | number }
   ) => {
     try {
-      // TODO: Implementar bulk update en Supabase
       console.log("Bulk updating transactions:", { transactionIds, updates });
+
+      // Llamar a Supabase para actualizar las transacciones
+      await updateMultipleTransactions(transactionIds, updates);
 
       // Actualizar estado local
       setRows((prevRows) =>
@@ -72,6 +74,8 @@ const Search = () => {
             : row
         )
       );
+
+      console.log("Transacciones actualizadas exitosamente en bulk");
     } catch (error) {
       console.error("Error bulk updating transactions:", error);
       alert(

@@ -1,5 +1,5 @@
 import { ReactElement } from 'react'
-import { Box, Button, CircularProgress, Typography } from '@mui/material'
+import { Button, CircularProgress, Typography } from '@mui/material'
 import { useStyles } from './fbutton.styles'
 
 type SharedBtnProps = {
@@ -53,17 +53,7 @@ const FButton = ({
       fullWidth={props.fullWidth}
       endIcon={!props.loading && props.endIcon}
     >
-      {props.loading ? (
-        <Box sx={{ display: 'flex', gap: 6 }}>
-          <Typography
-            variant={'bodyRegular'}
-            className={`${styles.title} ${props.textClassName || ''}`}
-          >
-            {props.title}
-          </Typography>
-          <CircularProgress size={14} color='inherit' />
-        </Box>
-      ) : props.title ? (
+      {props.title ? (
         <Typography
           variant={'bodyRegular'}
           className={`${styles.title} ${props.textClassName || ''}`}
@@ -72,6 +62,16 @@ const FButton = ({
         </Typography>
       ) : (
         props.titleTypography
+      )}
+      {props.loading && (
+        <CircularProgress 
+          size={14} 
+          color='inherit' 
+          sx={{ 
+            position: 'absolute',
+            right: '18px'
+          }} 
+        />
       )}
     </Button>
   )

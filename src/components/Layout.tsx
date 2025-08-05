@@ -5,9 +5,10 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import SearchIcon from "@mui/icons-material/Search";
 import PeopleIcon from "@mui/icons-material/People";
-import AddchartIcon from '@mui/icons-material/Addchart';
+import AddchartIcon from "@mui/icons-material/Addchart";
 import { useNavigate } from "react-router-dom";
 import UserProfile from "./UserProfile";
+import SubscriptionBar from "./SubscriptionBar";
 
 // Logo URL - imagen de dos manos dándose la mano
 const logoUrl = "https://cdn-icons-png.flaticon.com/512/2830/2830284.png";
@@ -125,6 +126,11 @@ const Layout = () => {
             {menuItems.map(renderMenuItem)}
           </Menu>
           <Box flexGrow={1} />
+          {/* Subscription Bar */}
+          <Box sx={{ marginBottom: "16px" }}>
+            <SubscriptionBar used={96} total={120} renewalDate="1/7/2025" />
+          </Box>
+
           <UserProfile />
         </Box>
       </Sidebar>

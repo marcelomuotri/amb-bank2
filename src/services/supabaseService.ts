@@ -553,4 +553,42 @@ export const deleteEntitiesByClientId = async (clientId: number): Promise<boolea
     console.error('Unexpected error deleting entities:', error);
     throw error;
   }
+};
+
+// Función para obtener los valores del enum industry
+export const fetchIndustryOptions = async (): Promise<string[]> => {
+  try {
+    // Consulta SQL raw para obtener todos los valores posibles del enum
+    const { data, error } = await supabase
+      .rpc('get_enum_values', { enum_name: 'industry' });
+    
+    if (error) {
+      console.error('Error fetching industry enum values:', error);
+      throw error;
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Unexpected error fetching industry options:', error);
+    throw error;
+  }
+};
+
+// Función para obtener los valores del enum entity_type
+export const fetchEntityTypeOptions = async (): Promise<string[]> => {
+  try {
+    // Consulta SQL raw para obtener todos los valores posibles del enum
+    const { data, error } = await supabase
+      .rpc('get_enum_values', { enum_name: 'entity_type' });
+    
+    if (error) {
+      console.error('Error fetching entity_type enum values:', error);
+      throw error;
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Unexpected error fetching entity_type options:', error);
+    throw error;
+  }
 }; 

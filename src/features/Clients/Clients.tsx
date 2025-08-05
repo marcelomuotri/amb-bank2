@@ -18,14 +18,14 @@ const Clients = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { clients, loading, error, refreshClients } = useClients();
-  
+
   // Estados para el modal de confirmación
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
 
   const handleAddClient = () => {
-    navigate('/clients/new');
+    navigate("/clients/new");
   };
 
   const handleEditClient = (clientId: string) => {
@@ -39,14 +39,14 @@ const Clients = () => {
 
   const handleDeleteConfirm = async () => {
     if (!clientToDelete) return;
-    
+
     setDeleting(true);
     try {
       await deleteClient(clientToDelete.id);
       // Recargar la lista de clientes
       refreshClients();
     } catch (error) {
-      console.error('Error deleting client:', error);
+      console.error("Error deleting client:", error);
       alert(t("clients.deleteError"));
     } finally {
       setDeleting(false);
@@ -88,13 +88,10 @@ const Clients = () => {
           <Button
             onClick={() => handleEditClient(row.original.id.toString())}
             size="small"
-            sx={{ 
+            sx={{
               color: "primary.main",
               minWidth: "auto",
               padding: "4px 8px",
-              "&:hover": {
-                backgroundColor: "rgba(0, 155, 87, 0.1)",
-              }
             }}
           >
             <EditIcon fontSize="small" />
@@ -102,16 +99,16 @@ const Clients = () => {
           <Button
             onClick={() => handleDeleteClick(row.original)}
             size="small"
-            sx={{ 
+            sx={{
               color: "#d32f2f",
               minWidth: "auto",
               padding: "4px 8px",
-              "&:hover": {
-                backgroundColor: "rgba(211, 47, 47, 0.1)",
-              }
             }}
           >
-            <DeleteIcon fontSize="small" />
+            <DeleteIcon
+              fontSize="small"
+              sx={{ color: theme.palette.primary.main }}
+            />
           </Button>
         </Box>
       ),
@@ -131,15 +128,26 @@ const Clients = () => {
   return (
     <>
       <LoadingFade loading={loading}>
-        <Box sx={{ backgroundColor: "white", minHeight: "80vh", padding: 24, borderRadius: theme.shape.borderRadius }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+        <Box
+          sx={{
+            backgroundColor: "white",
+            minHeight: "80vh",
+            padding: 24,
+            borderRadius: theme.shape.borderRadius,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 4,
+            }}
+          >
             <Typography component="h1" sx={{ fontSize: 24, fontWeight: 700 }}>
               {t("clients.title")}
             </Typography>
-            <FButton
-              onClick={handleAddClient}
-              title={t("clients.addClient")}
-            />
+            <FButton onClick={handleAddClient} title={t("clients.addClient")} />
           </Box>
 
           <SimpleTable
@@ -158,9 +166,10 @@ const Clients = () => {
       <ConfirmDialog
         open={confirmOpen}
         title={t("clients.deleteConfirmTitle")}
-        description={clientToDelete 
-          ? t("clients.deleteConfirmMessage", { name: clientToDelete.name })
-          : t("clients.deleteConfirmMessage")
+        description={
+          clientToDelete
+            ? t("clients.deleteConfirmMessage", { name: clientToDelete.name })
+            : t("clients.deleteConfirmMessage")
         }
         confirmText={t("clients.delete")}
         cancelText={t("clients.cancel")}

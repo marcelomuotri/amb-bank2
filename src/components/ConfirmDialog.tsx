@@ -1,6 +1,7 @@
 import React from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import FButton from "./FButton/FButton";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -32,17 +33,19 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <Typography>{description}</Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={loading}>
-          {cancelText || t("table.cancel")}
-        </Button>
-        <Button
+        <FButton 
+          onClick={onClose} 
+          disabled={loading}
+          title={cancelText || t("table.cancel")}
+          variant="outlined"
+        />
+        <FButton
           onClick={onConfirm}
           color="error"
           variant="contained"
           disabled={loading}
-        >
-          {confirmText || t("table.delete")}
-        </Button>
+          title={confirmText || t("table.delete")}
+        />
       </DialogActions>
     </Dialog>
   );

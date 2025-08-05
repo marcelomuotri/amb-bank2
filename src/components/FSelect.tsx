@@ -42,18 +42,29 @@ const FSelect = ({ label, options, onChange, sx, hideLabel = false, value: exter
           displayEmpty
           renderValue={(selected) => {
             if (!selected) {
-              return <span style={{ color: '#6B7280' }}>{placeholder || t(label)}</span>;
+              return <span style={{ color: '#374151' }}>{placeholder ? t(placeholder) : t(label)}</span>;
             }
             return options.find(option => option.value === selected)?.label || selected;
           }}
           sx={{
             width: "100%",
-            //height: "40px",
+            minHeight: "46px",
             padding: "8.5px 14px",
-            border: "1px solid #c4c4c4",
+            border: "1px solid #d1d5db !important",
             borderRadius: theme.shape.borderRadius,
             fontSize: "16px",
             background: "white",
+            "&.Mui-focused": {
+              borderColor: "primary.main !important",
+              borderWidth: "2px !important",
+            },
+            "& .MuiSelect-icon": {
+              color: "#666",
+            },
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: "transparent !important",
+              border: "none !important",
+            },
             ...sx,
           }}
         >

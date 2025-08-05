@@ -109,17 +109,14 @@ export const appComponents: Components<Omit<Theme, 'components'>> = {
         height: 50,
         //padding: '16px 32px',
         '& .MuiOutlinedInput-notchedOutline': {
-          borderColor: '#DFE5E9',
+          //borderColor: '#DFE5E9',
           transition: 'border-color 0.3s ease-in-out',
-          borderWidth: 1,
+          //borderWidth: 1,
         },
         '&:hover .MuiOutlinedInput-notchedOutline': {
           borderColor: '#DFE5E9', // Color al pasar el mouse
         },
-        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-          borderColor: theme.palette.action.focus, // Color cuando está enfocado
-          borderWidth: 1,
-        },
+       
       },
       input: {
         padding: '14px 30px',
@@ -180,15 +177,15 @@ export const appComponents: Components<Omit<Theme, 'components'>> = {
     styleOverrides: {
       root: {
         '&.MuiOutlinedInput-root': {
-          borderColor: '#DEE0E3!important',
+          borderColor: '#d1d5db!important',
           borderRadius: "8px!important",
-          border: "none!important"
+          //border: "none!important"
         },
         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-          borderColor:  '#DEE0E3!important',
+          borderColor:  '#d1d5db!important',
         },
         '&.Mui-focused': {
-          border: 'none!important',
+          //border: 'none!important',
         },
       },
       icon: {
