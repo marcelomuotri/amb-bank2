@@ -570,10 +570,20 @@ export default function SimpleTable<TData extends TableData = TableData>({
     const row = table.getRow(editingCell.rowId);
     const oldRow = row.original;
 
+    // Mapeo de nombres de columnas de UI a nombres de base de datos
+    const columnMapping: { [key: string]: string } = {
+      'bank': 'source',
+      'checkNumber': 'check_number',
+      'observations': 'notes',
+    };
+
+    // Obtener el nombre real de la columna en la base de datos
+    const dbColumnName = columnMapping[editingCell.columnId] || editingCell.columnId;
+
     // Si tenemos onCellUpdate, usarlo para actualizar la base de datos
     if (onCellUpdate && oldRow.transaction_id) {
       try {
-        await onCellUpdate(oldRow.transaction_id, editingCell.columnId, value);
+        await onCellUpdate(oldRow.transaction_id, dbColumnName, value);
       } catch (error) {
         console.error("Error updating cell:", error);
         return;

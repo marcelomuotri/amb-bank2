@@ -1,7 +1,7 @@
 import { Box, Button, useTheme } from "@mui/material";
 import { Outlet, useLocation } from "react-router-dom";
 import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import SearchIcon from "@mui/icons-material/Search";
 import PeopleIcon from "@mui/icons-material/People";
@@ -9,6 +9,23 @@ import AddchartIcon from "@mui/icons-material/Addchart";
 import { useNavigate } from "react-router-dom";
 import UserProfile from "./UserProfile";
 import SubscriptionBar from "./SubscriptionBar";
+import { getFilesDashboard } from "../services/supabaseService";
+import { useDashboard } from "../contexts/DashboardContext";
+
+interface DashboardData {
+  status: string;
+  total_available: number;
+  files_available: number;
+  used_this_month: number;
+  renews_on: string;
+  plan_name: string;
+  unlimited: boolean;
+  percentage_used: number;
+  organization_id: string;
+  current_month: string;
+  block_transactions: boolean;
+  subscription_status: string;
+}
 
 // Logo URL - imagen de dos manos dándose la mano
 const logoUrl = "https://cdn-icons-png.flaticon.com/512/2830/2830284.png";
@@ -38,6 +55,27 @@ const Layout = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const { dashboardData, setDashboardData, loading: dashboardLoading, setLoading: setDashboardLoading } = useDashboard();
+  const [blockTransactions, setBlockTransactions] = useState(false);
+  const [userProfileExpanded, setUserProfileExpanded] = useState(false);
+
+  // Obtener datos del dashboard de archivos
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setDashboardLoading(true);
+        const data = await getFilesDashboard("ec8b9ff0-1533-468d-93dd-2dd0deeb0188");
+        setDashboardData(data);
+        setBlockTransactions(data.block_transactions);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setDashboardLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);
@@ -70,16 +108,26 @@ const Layout = () => {
     path,
     icon: Icon,
     label,
-  }: (typeof menuItems)[0]) => (
-    <MenuItem
-      key={path}
-      icon={<Icon />}
-      onClick={() => navigate(path)}
-      style={getMenuItemStyle(path)}
-    >
-      {t(label)}
-    </MenuItem>
-  );
+  }: (typeof menuItems)[0]) => {
+    // Bloquear "New Statement" si blockTransactions es true O si files_available es 0
+    const isBlocked = (blockTransactions || (dashboardData?.files_available === 0)) && path === "/";
+    
+    return (
+      <MenuItem
+        key={path}
+        icon={<Icon />}
+        onClick={() => !isBlocked && navigate(path)}
+        style={{
+          ...getMenuItemStyle(path),
+          opacity: isBlocked ? 0.5 : 1,
+          cursor: isBlocked ? "not-allowed" : "pointer",
+        }}
+        disabled={isBlocked}
+      >
+        {t(label)}
+      </MenuItem>
+    );
+  };
 
   return (
     <Box display="flex" height="100vh">
@@ -127,11 +175,24 @@ const Layout = () => {
           </Menu>
           <Box flexGrow={1} />
           {/* Subscription Bar */}
-          <Box sx={{ marginBottom: "16px" }}>
-            <SubscriptionBar used={96} total={120} renewalDate="1/7/2025" />
+          <Box sx={{ marginBottom: userProfileExpanded ? "40px" : "16px" }}>
+            <SubscriptionBar 
+              used={dashboardData?.used_this_month || 0} 
+              total={dashboardData?.total_available || 120} 
+              renewalDate={
+                dashboardData?.renews_on 
+                  ? new Date(dashboardData.renews_on).toLocaleDateString('es-ES', {
+                      day: 'numeric',
+                      month: 'numeric',
+                      year: 'numeric'
+                    })
+                  : "1/7/2025"
+              }
+              loading={dashboardLoading}
+            />
           </Box>
 
-          <UserProfile />
+          <UserProfile onExpandedChange={setUserProfileExpanded} loading={dashboardLoading} />
         </Box>
       </Sidebar>
 

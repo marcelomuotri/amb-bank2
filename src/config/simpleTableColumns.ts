@@ -162,7 +162,7 @@ export const baseColumns: ColumnDef<TableRowData>[] = [
   {
     id: 'bank',
     header: 'BANK',
-    accessorKey: 'bank',
+    accessorKey: 'source',
     size: 13, // 13% del ancho total
   },
   {
@@ -317,7 +317,7 @@ export const baseColumnsWithoutId: ColumnDef<TableRowData>[] = [
   {
     id: 'bank',
     header: 'BANK',
-    accessorKey: 'bank',
+    accessorKey: 'source',
     size: 13, // 13% del ancho total
   },
   {

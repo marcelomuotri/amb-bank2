@@ -131,25 +131,46 @@ const Clients = () => {
         <Box
           sx={{
             backgroundColor: "white",
-            minHeight: "80vh",
-            padding: 24,
             borderRadius: theme.shape.borderRadius,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            padding: "24px",
+            marginBottom: "24px",
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            justifyContent: "space-between",
           }}
         >
-          <Box
+          <Typography
+            component="h4"
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 4,
+              fontWeight: 600,
+              color: "#333",
+              fontSize: "1.5rem",
+              margin: 0,
+              marginBottom: "8px",
+              marginRight: 3,
             }}
           >
-            <Typography component="h1" sx={{ fontSize: 24, fontWeight: 700 }}>
-              {t("clients.title")}
-            </Typography>
-            <FButton onClick={handleAddClient} title={t("clients.addClient")} />
+            {t("clients.title")}
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <FButton 
+              onClick={handleAddClient} 
+              title={t("clients.addClient")}
+              sx={{ height: 40 }}
+            />
           </Box>
+        </Box>
 
+        <Box
+          sx={{
+            backgroundColor: "white",
+            borderRadius: theme.shape.borderRadius,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            overflow: "hidden",
+          }}
+        >
           <SimpleTable
             data={clients}
             columns={columns}

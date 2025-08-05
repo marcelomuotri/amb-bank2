@@ -6,7 +6,7 @@ import { t } from "i18next";
 import { useClients } from "../../hooks/useClients";
 import FSelect from "../../components/FSelect";
 import FButton from "../../components/FButton/FButton";
-import { searchTransactionsByClient, updateMultipleTransactions } from "../../services/supabaseService";
+import { searchTransactionsByClient, updateMultipleTransactions, updateTransaction } from "../../services/supabaseService";
 
 // Tipo para las transacciones de Supabase
 interface SupabaseTransaction {
@@ -37,6 +37,21 @@ const Search = () => {
       prevRows.map((row) => (row.id === oldRow.id ? newRow : row))
     );
     console.log("Row updated:", { newRow, oldRow });
+  };
+
+  const handleCellUpdate = async (
+    transactionId: string,
+    columnName: string,
+    newValue: string | number
+  ) => {
+    try {
+      console.log("Updating cell:", { transactionId, columnName, newValue });
+      await updateTransaction(transactionId, columnName, newValue);
+      console.log("Cell updated successfully");
+    } catch (error) {
+      console.error("Error updating cell:", error);
+      throw error;
+    }
   };
 
   const handleRowDelete = async (transactionIds: string[]) => {
@@ -196,6 +211,7 @@ const Search = () => {
             data={rows}
             columns={searchColumns}
             onRowUpdate={handleRowUpdate}
+            onCellUpdate={handleCellUpdate}
             onRowDelete={handleRowDelete}
             onBulkUpdate={handleBulkUpdate}
             editable={true}

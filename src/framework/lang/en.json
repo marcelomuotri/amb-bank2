@@ -83,6 +83,7 @@
     "stepper.continue": "Continue",
     "stepper.continueAndDownload": "Continue and Download",
     "stepper.download": "Download",
+    "step2.noDataToDownload": "No data available to download",
     "summaryItem.bankNamePlaceholder": "Bank name",
     "summaryItem.fileNamePlaceholder": "File name",
     "table.account": "Account",

@@ -13,6 +13,7 @@ import Login from "./features/Login";
 import ResetPassword from "./features/ResetPassword";
 import { ThemeProvider } from "@mui/material/styles";
 import appTheme from "./framework/theme/app-theme";
+import { DashboardProvider } from "./contexts/DashboardContext";
 import Home from "./features/Home/Home";
 import Search from "./features/Search/Search";
 import Clients from "./features/Clients/Clients";
@@ -78,7 +79,9 @@ const router = createBrowserRouter([
 function App() {
   return (
     <ThemeProvider theme={appTheme}>
-      <RouterProvider router={router} />
+      <DashboardProvider>
+        <RouterProvider router={router} />
+      </DashboardProvider>
     </ThemeProvider>
   );
 }

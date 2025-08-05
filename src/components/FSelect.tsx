@@ -18,6 +18,9 @@ const FSelect = ({ label, options, onChange, sx, hideLabel = false, value: exter
   const theme = useTheme();
   const [internalValue, setInternalValue] = useState(externalValue || "");
 
+  // Ordenar las opciones alfabéticamente por label
+  const sortedOptions = [...options].sort((a, b) => a.label.localeCompare(b.label));
+
   const handleChange = (newValue: string) => {
     setInternalValue(newValue);
     onChange?.(newValue);
@@ -44,7 +47,7 @@ const FSelect = ({ label, options, onChange, sx, hideLabel = false, value: exter
             if (!selected) {
               return <span style={{ color: '#374151' }}>{placeholder ? t(placeholder) : t(label)}</span>;
             }
-            return options.find(option => option.value === selected)?.label || selected;
+            return sortedOptions.find(option => option.value === selected)?.label || selected;
           }}
           sx={{
             width: "100%",
@@ -68,7 +71,7 @@ const FSelect = ({ label, options, onChange, sx, hideLabel = false, value: exter
             ...sx,
           }}
         >
-          {options.map((option) => (
+          {sortedOptions.map((option) => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}
             </MenuItem>

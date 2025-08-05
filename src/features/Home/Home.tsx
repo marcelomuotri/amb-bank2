@@ -9,15 +9,18 @@ import {
   uploadFilesToWebhook,
 } from "../../services/supabaseService";
 import { useBanks } from "../../hooks/useBanks";
+import { useDashboard } from "../../contexts/DashboardContext";
 
 const Home = () => {
   const { t } = useTranslation();
+  const { updateUsedFiles } = useDashboard();
   const [activeStep, setActiveStep] = useState(1);
   const [batchResult, setBatchResult] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [selectedBank, setSelectedBank] = useState<string | null>(null);
   const [fileItems, setFileItems] = useState<any[]>([]);
+  const [downloadCSVFunction, setDownloadCSVFunction] = useState<(() => void) | null>(null);
 
   const steps = [{ label: t("upload") }, { label: t("clasify") }];
 
@@ -89,6 +92,9 @@ const Home = () => {
             };
             setBatchResult(resultWithWarning);
             setIsProcessing(false);
+            
+            // Actualizar el contador de archivos usados
+            updateUsedFiles(fileItems.length);
           },
           () => {
             setIsProcessing(false);
@@ -101,11 +107,14 @@ const Home = () => {
         setIsProcessing(false);
       }
     } else if (activeStep === 2) {
-      // En el paso 2, el botón "Continue and Download" debería descargar el archivo
-      // Por ahora, solo mostramos un mensaje o podemos implementar la descarga
-      console.log("Descargando archivo...");
-      // Aquí puedes implementar la lógica de descarga
-      // Por ejemplo: downloadFile(batchResult);
+      // En el paso 2, el botón "Continue and Download" descarga el CSV y se queda en el step
+      console.log("Descargando CSV...");
+      // Llamar a la función de descarga
+      if (downloadCSVFunction) {
+        downloadCSVFunction();
+      }
+      // No avanzar al siguiente paso, quedarse en Step2
+      return;
     }
   };
   console.log("batchResult", batchResult);
@@ -122,7 +131,7 @@ const Home = () => {
           }
           currentStep={activeStep === 2 ? "step2" : undefined}
           steps={steps}
-          buttonTitle={activeStep === 2 ? t("stepper.continueAndDownload") : t("stepper.continue")}
+          buttonTitle={activeStep === 2 ? t("stepper.download") : t("stepper.continue")}
         />
 
       <Box
@@ -153,6 +162,9 @@ const Home = () => {
               batchResult={batchResult}
               isProcessing={isProcessing}
               banks={banks}
+              onDownloadCSV={(downloadFn) => {
+                setDownloadCSVFunction(() => downloadFn);
+              }}
             />
           </Box>
         )}

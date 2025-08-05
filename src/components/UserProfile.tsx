@@ -1,4 +1,4 @@
-import { Box, Typography, Avatar, useTheme } from "@mui/material";
+import { Box, Typography, Avatar, useTheme, Skeleton } from "@mui/material";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
@@ -6,7 +6,12 @@ import { supabase } from "../../supaconfig";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LogoutIcon from "@mui/icons-material/Logout";
 
-const UserProfile = () => {
+interface UserProfileProps {
+  onExpandedChange?: (expanded: boolean) => void;
+  loading?: boolean;
+}
+
+const UserProfile: React.FC<UserProfileProps> = ({ onExpandedChange, loading = false }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { user } = useAuth();
@@ -29,7 +34,9 @@ const UserProfile = () => {
   };
 
   const handleToggle = () => {
-    setIsExpanded(!isExpanded);
+    const newExpanded = !isExpanded;
+    setIsExpanded(newExpanded);
+    onExpandedChange?.(newExpanded);
   };
 
   const handleLogout = () => {
@@ -48,7 +55,7 @@ const UserProfile = () => {
     >
       {/* Contenido principal */}
       <Box
-        onClick={handleToggle}
+        onClick={() => !loading && handleToggle()}
         sx={{
           display: "flex",
           alignItems: "center",
@@ -57,51 +64,65 @@ const UserProfile = () => {
           backgroundColor: isExpanded ? `${theme.palette.primary.main}10` : "transparent",
           transition: "all 0.2s ease",
           transform: isExpanded ? "translateY(-100%)" : "translateY(0)",
+          cursor: loading ? "default" : "pointer",
           "&:hover": {
-            backgroundColor: `${theme.palette.primary.main}10`,
+            backgroundColor: loading ? "transparent" : `${theme.palette.primary.main}10`,
           },
         }}
       >
-        <Avatar
-          sx={{
-            width: 35,
-            height: 35,
-            backgroundColor: getAvatarColor(user.email),
-            color: "white",
-            fontWeight: 600,
-            fontSize: "16px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-          }}
-        >
-          {getInitials(user.email)}
-        </Avatar>
+        {loading ? (
+          <Skeleton variant="circular" width={35} height={35} />
+        ) : (
+          <Avatar
+            sx={{
+              width: 35,
+              height: 35,
+              backgroundColor: getAvatarColor(user.email),
+              color: "white",
+              fontWeight: 600,
+              fontSize: "16px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            }}
+          >
+            {getInitials(user.email)}
+          </Avatar>
+        )}
         
         <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-          <Typography
-            sx={{
-              fontSize: "16px",
-              fontWeight: 600,
-              color: "#333",
-              lineHeight: 1.2,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {user.email.split('@')[0]}
-          </Typography>
-          <Typography
-            sx={{
-              fontSize: "14px",
-              color: "#666",
-              lineHeight: 1.2,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {user.email}
-          </Typography>
+          {loading ? (
+            <>
+              <Skeleton width="60%" height={20} />
+              <Skeleton width="80%" height={16} />
+            </>
+          ) : (
+            <>
+              <Typography
+                sx={{
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  color: "#333",
+                  lineHeight: 1.2,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {user.email.split('@')[0]}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "14px",
+                  color: "#666",
+                  lineHeight: 1.2,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {user.email}
+              </Typography>
+            </>
+          )}
         </Box>
 
         <KeyboardArrowDownIcon
@@ -109,6 +130,7 @@ const UserProfile = () => {
             color: "#666",
             transition: "transform 0.2s ease",
             transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+            opacity: loading ? 0.5 : 1,
           }}
         />
       </Box>

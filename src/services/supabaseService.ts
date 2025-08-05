@@ -59,6 +59,7 @@ export const uploadFilesToWebhook = async (
     //client = "1";
     // Agregar cliente
     formData.append('client_id', client);
+    formData.append('organization_id', 'ec8b9ff0-1533-468d-93dd-2dd0deeb0188');
 
     const response = await fetch(`https://ambolt-studio.up.railway.app/webhook/send-files`, {
       method: 'POST',
@@ -206,10 +207,21 @@ export const updateTransaction = async (
   newValue: string | number
 ): Promise<boolean> => {
   console.log('transactionId', transactionId);
+  
+  // Mapeo de nombres de columnas de UI a nombres de base de datos
+  const columnMapping: { [key: string]: string } = {
+    'bank': 'source',
+    'checkNumber': 'check_number',
+    'observations': 'notes',
+  };
+
+  // Obtener el nombre real de la columna en la base de datos
+  const dbColumnName = columnMapping[columnName] || columnName;
+  
   try {
     const { error } = await supabase
       .from('transactions')
-      .update({ [columnName]: newValue })
+      .update({ [dbColumnName]: newValue })
       .eq('transaction_id', transactionId);
     
     if (error) {
@@ -217,7 +229,7 @@ export const updateTransaction = async (
       throw error;
     }
     
-    console.log('Transacción actualizada exitosamente:', { transactionId, columnName, newValue });
+    console.log('Transacción actualizada exitosamente:', { transactionId, columnName, dbColumnName, newValue });
     return true;
     
   } catch (error) {
@@ -278,10 +290,25 @@ export const updateMultipleTransactions = async (
   updates: { [key: string]: string | number }
 ): Promise<boolean> => {
   console.log('Actualizando transacciones en bulk:', { transactionIds, updates });
+  
+  // Mapeo de nombres de columnas de UI a nombres de base de datos
+  const columnMapping: { [key: string]: string } = {
+    'bank': 'source',
+    'checkNumber': 'check_number',
+    'observations': 'notes',
+  };
+
+  // Aplicar mapeo a las actualizaciones
+  const mappedUpdates: { [key: string]: string | number } = {};
+  Object.keys(updates).forEach(key => {
+    const dbColumnName = columnMapping[key] || key;
+    mappedUpdates[dbColumnName] = updates[key];
+  });
+  
   try {
     const { error } = await supabase
       .from('transactions')
-      .update(updates)
+      .update(mappedUpdates)
       .in('transaction_id', transactionIds);
     
     if (error) {
@@ -289,7 +316,7 @@ export const updateMultipleTransactions = async (
       throw error;
     }
     
-    console.log('Transacciones actualizadas exitosamente en bulk:', { transactionIds, updates });
+    console.log('Transacciones actualizadas exitosamente en bulk:', { transactionIds, updates, mappedUpdates });
     return true;
     
   } catch (error) {
@@ -589,6 +616,26 @@ export const fetchEntityTypeOptions = async (): Promise<string[]> => {
     return data || [];
   } catch (error) {
     console.error('Unexpected error fetching entity_type options:', error);
+    throw error;
+  }
+};
+
+// Función para obtener el dashboard de archivos
+export const getFilesDashboard = async (orgId: string): Promise<any> => {
+  try {
+    const { data, error } = await supabase.rpc('get_files_dashboard', {
+      org_id: orgId
+    });
+    
+    if (error) {
+      console.error('Error fetching files dashboard:', error);
+      throw error;
+    }
+    
+    console.log('Files dashboard response:', data);
+    return data;
+  } catch (error) {
+    console.error('Unexpected error fetching files dashboard:', error);
     throw error;
   }
 }; 
