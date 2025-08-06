@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../../supaconfig";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import LogoutIcon from "@mui/icons-material/Logout";
 
 interface UserProfileProps {
@@ -63,7 +64,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ onExpandedChange, loading = f
           borderRadius: theme.shape.borderRadius,
           backgroundColor: isExpanded ? `${theme.palette.primary.main}10` : "transparent",
           transition: "all 0.2s ease",
-          transform: isExpanded ? "translateY(-100%)" : "translateY(0)",
           cursor: loading ? "default" : "pointer",
           "&:hover": {
             backgroundColor: loading ? "transparent" : `${theme.palette.primary.main}10`,
@@ -125,21 +125,30 @@ const UserProfile: React.FC<UserProfileProps> = ({ onExpandedChange, loading = f
           )}
         </Box>
 
-        <KeyboardArrowDownIcon
-          sx={{
-            color: "#666",
-            transition: "transform 0.2s ease",
-            transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
-            opacity: loading ? 0.5 : 1,
-          }}
-        />
+        {isExpanded ? (
+          <KeyboardArrowDownIcon
+            sx={{
+              color: "#666",
+              transition: "transform 0.2s ease",
+              opacity: loading ? 0.5 : 1,
+            }}
+          />
+        ) : (
+          <KeyboardArrowUpIcon
+            sx={{
+              color: "#666",
+              transition: "transform 0.2s ease",
+              opacity: loading ? 0.5 : 1,
+            }}
+          />
+        )}
       </Box>
 
       {/* Dropdown con opción de logout */}
       <Box
         sx={{
           position: "absolute",
-          top: 0,
+          bottom: "100%",
           left: 0,
           right: 0,
           backgroundColor: "white",
@@ -148,9 +157,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ onExpandedChange, loading = f
           overflow: "hidden",
           transition: "all 0.2s ease",
           opacity: isExpanded ? 1 : 0,
-          transform: isExpanded ? "translateY(0)" : "translateY(-100%)",
+          transform: isExpanded ? "translateY(0)" : "translateY(100%)",
           pointerEvents: isExpanded ? "auto" : "none",
           zIndex: 1000,
+          marginBottom: "8px",
         }}
       >
         <Box

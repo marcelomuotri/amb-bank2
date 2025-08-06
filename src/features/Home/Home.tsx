@@ -59,38 +59,8 @@ const Home = () => {
             // Los mensajes de progreso se manejarán en Step2 si es necesario
           },
           (result: any) => {
-            // Agregar warning hardcodeado para prueba
-            const resultWithWarning = {
-              ...result,
-              warning: [
-                {
-                  fileName: "archivo1.pdf",
-                  transactionId: "TXN001",
-                  description: "Revisar detalles"
-                },
-                {
-                  fileName: "archivo2.xlsx",
-                  transactionId: "TXN002", 
-                  description: "Revisar valor de la columna credito"
-                },
-                {
-                  fileName: "archivo3.csv",
-                  transactionId: "TXN003",
-                  description: "Revisar fecha"
-                },
-                {
-                  fileName: "archivo3.csv",
-                  transactionId: "TXN004",
-                  description: "Formato de archivo no reconocido"
-                },
-                {
-                  fileName: "archivo5.xls",
-                  transactionId: "TXN005",
-                  description: "Monto negativo detectado"
-                },
-              ]
-            };
-            setBatchResult(resultWithWarning);
+            // Usar los warnings reales que vienen del backend
+            setBatchResult(result);
             setIsProcessing(false);
             
             // Actualizar el contador de archivos usados

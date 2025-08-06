@@ -12,6 +12,7 @@ import {
   updateMultipleTransactions,
   WebhookBatchResponse,
 } from "../../services/supabaseService";
+import { exportToCSV } from "../../utils/csvExport";
 
 interface Step2Props {
   batchResult: WebhookBatchResponse | null;
@@ -28,50 +29,7 @@ const Step2 = ({ batchResult, isProcessing, banks, onDownloadCSV }: Step2Props) 
 
   // Función para generar y descargar CSV
   const downloadCSV = useCallback(() => {
-    if (!rows || rows.length === 0) {
-      alert(t("step2.noDataToDownload"));
-      return;
-    }
-
-    // Definir las columnas que queremos en el CSV
-    const csvColumns = [
-      'transaction_id',
-      'date',
-      'description',
-      'credit_amount',
-      'debit_amount',
-      'balance',
-      'category',
-      'subcategory',
-      'source'
-    ];
-
-    // Crear el header del CSV
-    const headers = csvColumns.map(col => t(`table.${col}`)).join(',');
-    
-    // Crear las filas del CSV
-    const csvRows = rows.map(row => {
-      return csvColumns.map(col => {
-        const value = row[col as keyof TableRowData];
-        // Escapar comillas y envolver en comillas si contiene coma
-        const escapedValue = String(value || '').replace(/"/g, '""');
-        return escapedValue.includes(',') ? `"${escapedValue}"` : escapedValue;
-      }).join(',');
-    });
-
-    // Combinar header y filas
-    const csvContent = [headers, ...csvRows].join('\n');
-
-    // Crear el blob y descargar
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `transactions_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    exportToCSV(rows, t);
   }, [rows, t]);
 
   // Exponer la función de descarga al componente padre
@@ -236,6 +194,7 @@ const Step2 = ({ batchResult, isProcessing, banks, onDownloadCSV }: Step2Props) 
         resizable={true}
         banks={banks}
         showPendingReview={true}
+        batchResult={batchResult}
       />
     </Box>
   );

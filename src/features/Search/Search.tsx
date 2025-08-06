@@ -1,5 +1,5 @@
 import { Box, Typography, useTheme } from "@mui/material";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import SimpleTable from "../../components/SimpleTable";
 import { searchColumns, TableRowData } from "../../config/simpleTableColumns";
 import { t } from "i18next";
@@ -7,6 +7,8 @@ import { useClients } from "../../hooks/useClients";
 import FSelect from "../../components/FSelect";
 import FButton from "../../components/FButton/FButton";
 import { searchTransactionsByClient, updateMultipleTransactions, updateTransaction } from "../../services/supabaseService";
+import DownloadIcon from "@mui/icons-material/Download";
+import { exportToCSV } from "../../utils/csvExport";
 
 // Tipo para las transacciones de Supabase
 interface SupabaseTransaction {
@@ -102,6 +104,11 @@ const Search = () => {
   const { getClientsForSelector } = useClients();
   const [selectedClient, setSelectedClient] = useState("");
   console.log(selectedClient);
+
+  // Función para generar y descargar CSV
+  const downloadCSV = useCallback(() => {
+    exportToCSV(rows, t);
+  }, [rows, t]);
 
   const handleSearch = async () => {
     if (!selectedClient) {
@@ -219,6 +226,7 @@ const Search = () => {
             sortable={true}
             pagination={true}
             resizable={true}
+            onDownloadCSV={downloadCSV}
           />
         </Box>
       )}

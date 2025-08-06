@@ -39,6 +39,7 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import UnfoldMore from "@mui/icons-material/UnfoldMore";
 import FilterList from "@mui/icons-material/FilterList";
+import DownloadIcon from "../assets/DownloadIcon";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchField from "./SearchField";
@@ -55,6 +56,12 @@ interface TableData {
 interface Bank {
   value: string;
   label: string;
+}
+
+interface Warning {
+  transaction_id: string;
+  file_name: string;
+  detail: string;
 }
 
 interface SimpleTableProps<TData extends TableData = TableData> {
@@ -81,6 +88,10 @@ interface SimpleTableProps<TData extends TableData = TableData> {
   banks?: Bank[];
   t?: (key: string) => string;
   showPendingReview?: boolean;
+  batchResult?: {
+    warnings?: Warning[];
+  };
+  onDownloadCSV?: () => void;
 }
 
 // Estilos personalizados
@@ -179,6 +190,8 @@ export default function SimpleTable<TData extends TableData = TableData>({
   banks,
   t: externalT,
   showPendingReview = false,
+  batchResult,
+  onDownloadCSV,
 }: SimpleTableProps<TData>) {
   console.log("columns", columns);
   const theme = useTheme();
@@ -951,8 +964,8 @@ export default function SimpleTable<TData extends TableData = TableData>({
                 width: "100%",
               }}
             >
-              <Box sx={{ minWidth: showPendingReview ? "auto" : 0 }}>
-                {showPendingReview && (
+                      <Box sx={{ minWidth: showPendingReview ? "auto" : 0 }}>
+          {showPendingReview && batchResult?.warnings && batchResult.warnings.length > 0 && (
                   <FButton
                     variant="outlined"
                     title={t("table.pendingReview")}
@@ -981,6 +994,23 @@ export default function SimpleTable<TData extends TableData = TableData>({
                     }}
                   >
                     <FilterList />
+                  </IconButton>
+                )}
+                {onDownloadCSV && (
+                  <IconButton
+                    onClick={onDownloadCSV}
+                    sx={{
+                      minHeight: 48,
+                      minWidth: 48,
+                      border: "1px solid #ccc",
+                      borderRadius: theme.shape.borderRadius,
+                      color: "text.secondary",
+                      "&:hover": {
+                        backgroundColor: "action.hover",
+                      },
+                    }}
+                  >
+                    <DownloadIcon />
                   </IconButton>
                 )}
               </SearchContainer>
@@ -1834,92 +1864,25 @@ export default function SimpleTable<TData extends TableData = TableData>({
         <DialogTitle sx={{ fontSize: "22px", fontWeight: 600 }}>Pending Review</DialogTitle>
         <DialogContent sx={{ maxHeight: "70vh", overflow: "auto" }}>
           <Box sx={{ mt: 2 }}>
-            {/* Mock data de warnings agrupados por filename */}
+            {/* Usar warnings reales del backend */}
             {(() => {
-              const warnings = [
-                {
-                  fileName: "archivo1.pdf",
-                  transactionId: "TXN001",
-                  description: "Revisar detalles",
-                },
-                {
-                  fileName: "archivo1.pdf",
-                  transactionId: "TXN002",
-                  description: "Formato de fecha inválido",
-                },
-                {
-                  fileName: "archivo1.pdf",
-                  transactionId: "TXN003",
-                  description: "Campo obligatorio faltante",
-                },
-                {
-                  fileName: "archivo2.xlsx",
-                  transactionId: "TXN004",
-                  description: "Revisar valor de la columna credito",
-                },
-                {
-                  fileName: "archivo2.xlsx",
-                  transactionId: "TXN005",
-                  description: "Monto fuera de rango",
-                },
-                {
-                  fileName: "archivo2.xlsx",
-                  transactionId: "TXN006",
-                  description: "Transacción duplicada",
-                },
-                {
-                  fileName: "archivo3.csv",
-                  transactionId: "TXN007",
-                  description: "Revisar fecha",
-                },
-                {
-                  fileName: "archivo3.csv",
-                  transactionId: "TXN008",
-                  description: "Formato de archivo no reconocido",
-                },
-                {
-                  fileName: "archivo3.csv",
-                  transactionId: "TXN009",
-                  description: "Campo de descripción vacío",
-                },
-                {
-                  fileName: "archivo3.csv",
-                  transactionId: "TXN010",
-                  description: "Valor de crédito inválido",
-                },
-                {
-                  fileName: "archivo4.txt",
-                  transactionId: "TXN011",
-                  description: "Archivo no soportado",
-                },
-                {
-                  fileName: "archivo4.txt",
-                  transactionId: "TXN012",
-                  description: "Encoding no reconocido",
-                },
-                {
-                  fileName: "archivo5.xls",
-                  transactionId: "TXN013",
-                  description: "Monto negativo detectado",
-                },
-                {
-                  fileName: "archivo5.xls",
-                  transactionId: "TXN014",
-                  description: "Fecha futura detectada",
-                },
-                {
-                  fileName: "archivo6.json",
-                  transactionId: "TXN015",
-                  description: "Formato JSON inválido",
-                },
-              ];
+              // Verificar si hay warnings en batchResult
+              const warnings = batchResult?.warnings || [];
+              
+              if (warnings.length === 0) {
+                return (
+                  <Typography sx={{ textAlign: "center", color: "text.secondary" }}>
+                    No hay warnings para revisar
+                  </Typography>
+                );
+              }
 
-              // Agrupar por fileName
+              // Agrupar por file_name
               const groupedWarnings = warnings.reduce((acc, warning) => {
-                if (!acc[warning.fileName]) {
-                  acc[warning.fileName] = [];
+                if (!acc[warning.file_name]) {
+                  acc[warning.file_name] = [];
                 }
-                acc[warning.fileName].push(warning);
+                acc[warning.file_name].push(warning);
                 return acc;
               }, {} as Record<string, typeof warnings>);
 
@@ -1992,7 +1955,7 @@ export default function SimpleTable<TData extends TableData = TableData>({
                                    width: "30%",
                                  }}
                                >
-                                 {warning.transactionId}
+                                 {warning.transaction_id}
                                </TableCell>
                                <TableCell
                                  sx={{
@@ -2001,7 +1964,7 @@ export default function SimpleTable<TData extends TableData = TableData>({
                                    color: "#6B7280",
                                  }}
                                >
-                                 {warning.description}
+                                 {warning.detail}
                                </TableCell>
                             </TableRow>
                           ))}
