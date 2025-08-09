@@ -1,6 +1,9 @@
 import { supabase } from '../../supaconfig';
 import { Client, Bank, Category, Subcategory, Entity } from '../types/supabaseTypes';
 
+// Obtener el organization_id desde las variables de entorno
+const ORGANIZATION_ID = import.meta.env.VITE_ORGANIZATION_ID || 'ec8b9ff0-1533-468d-93dd-2dd0deeb0188';
+
 // Tipos para las respuestas
 export interface BatchTransaction {
   id: number;
@@ -59,7 +62,7 @@ export const uploadFilesToWebhook = async (
     //client = "1";
     // Agregar cliente
     formData.append('client_id', client);
-    formData.append('organization_id', 'ec8b9ff0-1533-468d-93dd-2dd0deeb0188');
+    formData.append('organization_id', ORGANIZATION_ID);
 
     const response = await fetch(`https://ambolt-studio.up.railway.app/webhook/send-files`, {
       method: 'POST',
@@ -177,6 +180,7 @@ export const fetchClients = async (): Promise<Client[]> => {
     const { data, error } = await supabase
       .from('clients')
       .select('*')
+      .eq('organization_id', ORGANIZATION_ID)
       .order('id', { ascending: true });
     if (error) throw error;
     return data as Client[];
@@ -354,7 +358,8 @@ export const fetchCategories = async (): Promise<Category[]> => {
   try {
     const { data, error } = await supabase
       .from('category')
-      .select('*');
+      .select('*')
+      .eq('organization_id', ORGANIZATION_ID);
     if (error) throw error;
     return data as Category[] || [];
   } catch (error) {
@@ -368,7 +373,8 @@ export const fetchSubcategories = async (): Promise<Subcategory[]> => {
   try {
     const { data, error } = await supabase
       .from('subcategory')
-      .select('*');
+      .select('*')
+      .eq('organization_id', ORGANIZATION_ID);
     if (error) throw error;
     return data as Subcategory[] || [];
   } catch (error) {
@@ -388,7 +394,7 @@ export const createClient = async (clientData: {
       .from('clients')
       .insert([{
         ...clientData,
-        organization_id: 'ec8b9ff0-1533-468d-93dd-2dd0deeb0188'
+        organization_id: ORGANIZATION_ID
       }])
       .select()
       .single();

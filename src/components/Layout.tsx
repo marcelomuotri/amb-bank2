@@ -64,7 +64,7 @@ const Layout = () => {
     const fetchDashboardData = async () => {
       try {
         setDashboardLoading(true);
-        const data = await getFilesDashboard("ec8b9ff0-1533-468d-93dd-2dd0deeb0188");
+        const data = await getFilesDashboard();
         setDashboardData(data);
         setBlockTransactions(data.block_transactions);
       } catch (error) {
