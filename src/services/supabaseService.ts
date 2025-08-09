@@ -627,10 +627,10 @@ export const fetchEntityTypeOptions = async (): Promise<string[]> => {
 };
 
 // Función para obtener el dashboard de archivos
-export const getFilesDashboard = async (orgId: string): Promise<any> => {
+export const getFilesDashboard = async (): Promise<any> => {
   try {
-    const { data, error } = await supabase.rpc('get_files_dashboard', {
-      org_id: orgId
+     const { data, error } = await supabase.rpc('get_files_dashboard', {
+      org_id: ORGANIZATION_ID
     });
     
     if (error) {
