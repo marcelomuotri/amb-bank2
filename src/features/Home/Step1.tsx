@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 import { useClients } from "../../hooks/useClients";
 import FSelect from "../../components/FSelect";
+import FAutocomplete from "../../components/FAutocomplete";
 import FileUpload from "../../components/FileUpload";
 import SummaryItem from "../../components/SummaryItem/SummaryItem";
 import LoadingFade from "../../components/LoadingFade";
@@ -130,7 +131,7 @@ const Step1 = ({
                 Error cargando clientes
               </Typography>
             ) : (
-              <FSelect
+              <FAutocomplete
                 options={getClientsForSelector()}
                 label="step1.client"
                 onChange={handleClientChange}

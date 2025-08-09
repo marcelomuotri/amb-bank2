@@ -1,6 +1,14 @@
 import { supabase } from '../../supaconfig';
 import { Client, Bank, Category, Subcategory, Entity } from '../types/supabaseTypes';
 
+// Tipo para la tabla organizations
+interface Organization {
+  id: string;
+  name: string;
+  logo_url: string;
+  created_at: string;
+}
+
 // Obtener el organization_id desde las variables de entorno
 const ORGANIZATION_ID = import.meta.env.VITE_ORGANIZATION_ID || 'ec8b9ff0-1533-468d-93dd-2dd0deeb0188';
 
@@ -626,10 +634,45 @@ export const fetchEntityTypeOptions = async (): Promise<string[]> => {
   }
 };
 
+// Función para obtener los datos de la organización
+export const getOrganizationData = async (): Promise<Organization> => {
+  try {
+    console.log('Buscando organización con ID:', ORGANIZATION_ID);
+    
+    // Primero, vamos a ver qué organizaciones existen
+    const { data: allOrgs, error: listError } = await supabase
+      .from('organizations')
+      .select('id, name');
+    
+    if (listError) {
+      console.error('Error listando organizaciones:', listError);
+    } else {
+      console.log('Organizaciones disponibles:', allOrgs);
+    }
+    
+    const { data, error } = await supabase
+      .from('organizations')
+      .select('*')
+      .eq('id', ORGANIZATION_ID)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching organization data:', error);
+      throw error;
+    }
+    
+    console.log('Organization data:', data);
+    return data;
+  } catch (error) {
+    console.error('Unexpected error fetching organization data:', error);
+    throw error;
+  }
+};
+
 // Función para obtener el dashboard de archivos
 export const getFilesDashboard = async (): Promise<any> => {
   try {
-     const { data, error } = await supabase.rpc('get_files_dashboard', {
+    const { data, error } = await supabase.rpc('get_files_dashboard', {
       org_id: ORGANIZATION_ID
     });
     

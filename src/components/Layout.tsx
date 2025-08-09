@@ -11,24 +11,7 @@ import UserProfile from "./UserProfile";
 import SubscriptionBar from "./SubscriptionBar";
 import { getFilesDashboard } from "../services/supabaseService";
 import { useDashboard } from "../contexts/DashboardContext";
-
-interface DashboardData {
-  status: string;
-  total_available: number;
-  files_available: number;
-  used_this_month: number;
-  renews_on: string;
-  plan_name: string;
-  unlimited: boolean;
-  percentage_used: number;
-  organization_id: string;
-  current_month: string;
-  block_transactions: boolean;
-  subscription_status: string;
-}
-
-// Logo URL - imagen de dos manos dándose la mano
-const logoUrl = "https://cdn-icons-png.flaticon.com/512/2830/2830284.png";
+import { useOrganization } from "../hooks/useOrganization";
 
 // Configuración del menú
 const menuItems = [
@@ -55,9 +38,20 @@ const Layout = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
-  const { dashboardData, setDashboardData, loading: dashboardLoading, setLoading: setDashboardLoading } = useDashboard();
+  const {
+    dashboardData,
+    setDashboardData,
+    loading: dashboardLoading,
+    setLoading: setDashboardLoading,
+  } = useDashboard();
   const [blockTransactions, setBlockTransactions] = useState(false);
   const [userProfileExpanded, setUserProfileExpanded] = useState(false);
+
+  // Obtener datos de la organización para el logo
+  const { organizationData } = useOrganization();
+
+  // Usar logo de la organización o logo por defecto
+  const logoUrl = organizationData?.logo_url;
 
   // Obtener datos del dashboard de archivos
   useEffect(() => {
@@ -110,8 +104,10 @@ const Layout = () => {
     label,
   }: (typeof menuItems)[0]) => {
     // Bloquear "New Statement" si blockTransactions es true O si files_available es 0
-    const isBlocked = (blockTransactions || (dashboardData?.files_available === 0)) && path === "/";
-    
+    const isBlocked =
+      (blockTransactions || dashboardData?.files_available === 0) &&
+      path === "/";
+
     return (
       <MenuItem
         key={path}
@@ -158,41 +154,52 @@ const Layout = () => {
           sx={{ paddingLeft: "20px", paddingRight: "18px" }}
         >
           <Menu>
-            <MenuItem rootStyles={{ paddingBottom: "10px" }}>
-              <img
-                src={logoUrl}
-                style={{
-                  marginTop: "20px",
-                  width: 30,
-                  height: 30,
-                  objectFit: "cover",
-                  objectPosition: "top",
-                }}
-                alt="logo"
-              />
+            <MenuItem rootStyles={{ paddingBottom: "20px" }}>
+              {logoUrl && (
+                <img
+                  src={logoUrl}
+                  style={{
+                    width: collapsed ? 30 : 50,
+                    height: collapsed ? 30 : 50,
+                    objectFit: "cover",
+                    objectPosition: "top",
+                    transition: "width 0.2s ease, height 0.2s ease",
+                    marginTop: "20px",
+                  }}
+                  alt="logo"
+                />
+              )}
             </MenuItem>
             {menuItems.map(renderMenuItem)}
           </Menu>
           <Box flexGrow={1} />
-          {/* Subscription Bar */}
-          <Box sx={{ marginBottom: userProfileExpanded ? "40px" : "16px" }}>
-            <SubscriptionBar 
-              used={dashboardData?.used_this_month || 0} 
-              total={dashboardData?.total_available || 120} 
-              renewalDate={
-                dashboardData?.renews_on 
-                  ? new Date(dashboardData.renews_on).toLocaleDateString('es-ES', {
-                      day: 'numeric',
-                      month: 'numeric',
-                      year: 'numeric'
-                    })
-                  : "1/7/2025"
-              }
-              loading={dashboardLoading}
-            />
-          </Box>
+          {/* Subscription Bar - Solo mostrar cuando el menú no esté colapsado */}
+          {!collapsed && (
+            <Box sx={{ marginBottom: userProfileExpanded ? "40px" : "16px" }}>
+              <SubscriptionBar
+                used={dashboardData?.used_this_month || 0}
+                total={dashboardData?.total_available || 120}
+                renewalDate={
+                  dashboardData?.renews_on
+                    ? new Date(dashboardData.renews_on).toLocaleDateString(
+                        "es-ES",
+                        {
+                          day: "numeric",
+                          month: "numeric",
+                          year: "numeric",
+                        }
+                      )
+                    : "1/7/2025"
+                }
+                loading={dashboardLoading}
+              />
+            </Box>
+          )}
 
-          <UserProfile onExpandedChange={setUserProfileExpanded} loading={dashboardLoading} />
+          <UserProfile
+            onExpandedChange={setUserProfileExpanded}
+            loading={dashboardLoading}
+          />
         </Box>
       </Sidebar>
 

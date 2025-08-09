@@ -5,6 +5,7 @@ import { searchColumns, TableRowData } from "../../config/simpleTableColumns";
 import { t } from "i18next";
 import { useClients } from "../../hooks/useClients";
 import FSelect from "../../components/FSelect";
+import FAutocomplete from "../../components/FAutocomplete";
 import FButton from "../../components/FButton/FButton";
 import { searchTransactionsByClient, updateMultipleTransactions, updateTransaction } from "../../services/supabaseService";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -185,7 +186,7 @@ const Search = () => {
           {t("searchClients")}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <FSelect
+          <FAutocomplete
             label=""
             options={getClientsForSelector()}
             value={selectedClient}

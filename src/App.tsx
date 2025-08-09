@@ -14,6 +14,8 @@ import ResetPassword from "./features/ResetPassword";
 import { ThemeProvider } from "@mui/material/styles";
 import appTheme from "./framework/theme/app-theme";
 import { DashboardProvider } from "./contexts/DashboardContext";
+import { useOrganization } from "./hooks/useOrganization";
+import { Box, CircularProgress } from "@mui/material";
 import Home from "./features/Home/Home";
 import Search from "./features/Search/Search";
 import Clients from "./features/Clients/Clients";
@@ -77,6 +79,33 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  // Cargar datos de la organización y actualizar favicon
+  const { loading: organizationLoading, error: organizationError } =
+    useOrganization();
+
+  // Mostrar loader mientras se cargan los datos de la organización
+  if (organizationLoading) {
+    return (
+      <ThemeProvider theme={appTheme}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="100vh"
+          flexDirection="column"
+          gap={2}
+        >
+          <CircularProgress size={60} />
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
+  // Si hay error, mostrar mensaje pero continuar
+  if (organizationError) {
+    console.warn("Error cargando organización:", organizationError);
+  }
+
   return (
     <ThemeProvider theme={appTheme}>
       <DashboardProvider>
