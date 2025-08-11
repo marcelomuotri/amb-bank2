@@ -635,25 +635,14 @@ export const fetchEntityTypeOptions = async (): Promise<string[]> => {
 };
 
 // Función para obtener los datos de la organización
-export const getOrganizationData = async (): Promise<Organization> => {
+export const getOrganizationData = async (organizationId: string): Promise<Organization> => {
   try {
-    console.log('Buscando organización con ID:', ORGANIZATION_ID);
-    
-    // Primero, vamos a ver qué organizaciones existen
-    const { data: allOrgs, error: listError } = await supabase
-      .from('organizations')
-      .select('id, name');
-    
-    if (listError) {
-      console.error('Error listando organizaciones:', listError);
-    } else {
-      console.log('Organizaciones disponibles:', allOrgs);
-    }
+    console.log('Buscando organización con ID:', organizationId);
     
     const { data, error } = await supabase
       .from('organizations')
       .select('*')
-      .eq('id', ORGANIZATION_ID)
+      .eq('id', organizationId)
       .single();
     
     if (error) {
