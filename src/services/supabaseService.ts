@@ -55,22 +55,47 @@ export const uploadFilesToWebhook = async (
   try {
     const formData = new FormData();
     
+    console.log('=== INFORMACIÓN DE ARCHIVOS A ENVIAR ===');
+    console.log('Banco seleccionado:', bankName);
+    console.log('Cliente ID:', client);
+    console.log('Organización ID:', ORGANIZATION_ID);
+    console.log('Cantidad de archivos:', files.length);
+    
     // Agregar archivos con nombre parseado
-    files.forEach(file => {
+    files.forEach((file, index) => {
+      console.log(`--- Archivo ${index + 1} ---`);
+      console.log('Nombre original:', file.name);
+      console.log('Tipo MIME:', file.type);
+      console.log('Tamaño:', file.size, 'bytes');
+      
       // Crear nuevo nombre: "Banco - NombreOriginal.extensión"
       const fileExtension = file.name.split('.').pop();
       const fileNameWithoutExtension = file.name.replace(`.${fileExtension}`, '');
       const newFileName = `${bankName} - ${fileNameWithoutExtension}.${fileExtension}`;
       
+      console.log('Nombre nuevo:', newFileName);
+      
       // Crear nuevo File con el nombre parseado
       const renamedFile = new File([file], newFileName, { type: file.type });
+      console.log('Archivo renombrado:', renamedFile.name);
+      console.log('Tipo del archivo renombrado:', renamedFile.type);
+      
       formData.append('file', renamedFile);
     });
+    
     // Mockear el client momentáneamente para que siempre sea 1
     //client = "1";
     // Agregar cliente
     formData.append('client_id', client);
     formData.append('organization_id', ORGANIZATION_ID);
+    
+    console.log('=== FORM DATA ENVIADO ===');
+    console.log('client_id:', client);
+    console.log('organization_id:', ORGANIZATION_ID);
+    console.log('archivos en formData:', formData.getAll('file').length);
+    
+    console.log('=== ENVIANDO PETICIÓN AL WEBHOOK ===');
+    console.log('URL:', 'https://ambolt-studio.up.railway.app/webhook/send-files');
 
     const response = await fetch(`https://ambolt-studio.up.railway.app/webhook/send-files`, {
       method: 'POST',
@@ -82,6 +107,10 @@ export const uploadFilesToWebhook = async (
     }
 
     const result: WebhookResponse = await response.json();
+    
+    console.log('=== RESPUESTA DEL WEBHOOK ===');
+    console.log('Status:', response.status);
+    console.log('Response:', result);
     
     return result.batch_id;
     
@@ -222,7 +251,6 @@ export const updateTransaction = async (
   
   // Mapeo de nombres de columnas de UI a nombres de base de datos
   const columnMapping: { [key: string]: string } = {
-    'bank': 'source',
     'checkNumber': 'check_number',
     'observations': 'notes',
   };
@@ -305,7 +333,6 @@ export const updateMultipleTransactions = async (
   
   // Mapeo de nombres de columnas de UI a nombres de base de datos
   const columnMapping: { [key: string]: string } = {
-    'bank': 'source',
     'checkNumber': 'check_number',
     'observations': 'notes',
   };

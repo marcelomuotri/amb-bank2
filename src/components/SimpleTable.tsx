@@ -522,11 +522,11 @@ export default function SimpleTable<TData extends TableData = TableData>({
     setEditingCell({ rowId: row.id, columnId });
     setEditingValue(value?.toString() || "");
 
-    // Si es la columna account, accountType o bank, abrir el select automáticamente
+    // Si es la columna account, accountType o source (banco), abrir el select automáticamente
     if (
       columnId === "category" ||
       columnId === "subcategory" ||
-      columnId === "bank"
+      columnId === "source"
     ) {
       setSelectOpen(true);
     }
@@ -560,19 +560,32 @@ export default function SimpleTable<TData extends TableData = TableData>({
     console.log("oldRow", oldRow);
     if (onCellUpdate && oldRow.transaction_id) {
       try {
+        // Mapeo de nombres de columnas de UI a nombres de base de datos
+        const columnMapping: { [key: string]: string } = {
+          'checkNumber': 'check_number',
+          'observations': 'notes',
+        };
+        
+        // Obtener el nombre real de la columna en la base de datos
+        const dbColumnName = columnMapping[editingCell.columnId] || editingCell.columnId;
+        
         await onCellUpdate(
           oldRow.transaction_id,
-          editingCell.columnId,
+          dbColumnName,
           processedValue
         );
+        
+        // Actualizar el estado local
+        onRowUpdate(newRow, oldRow);
       } catch (error) {
         console.error("Error actualizando celda:", error);
         // Opcional: mostrar un mensaje de error al usuario
         return;
       }
+    } else {
+      // Si no hay onCellUpdate, solo actualizar el estado local
+      onRowUpdate(newRow, oldRow);
     }
-
-    onRowUpdate(newRow, oldRow);
     setEditingCell(null);
     setEditingValue("");
   };
@@ -585,7 +598,6 @@ export default function SimpleTable<TData extends TableData = TableData>({
 
     // Mapeo de nombres de columnas de UI a nombres de base de datos
     const columnMapping: { [key: string]: string } = {
-      'bank': 'source',
       'checkNumber': 'check_number',
       'observations': 'notes',
     };
@@ -597,16 +609,22 @@ export default function SimpleTable<TData extends TableData = TableData>({
     if (onCellUpdate && oldRow.transaction_id) {
       try {
         await onCellUpdate(oldRow.transaction_id, dbColumnName, value);
+        
+        // Solo actualizar el estado local si la actualización en BD fue exitosa
+        if (onRowUpdate) {
+          const newRow = { ...oldRow, [editingCell.columnId]: value };
+          onRowUpdate(newRow, oldRow);
+        }
       } catch (error) {
         console.error("Error updating cell:", error);
         return;
       }
-    }
-
-    // Si tenemos onRowUpdate, usarlo para actualizar el estado local
-    if (onRowUpdate) {
-      const newRow = { ...oldRow, [editingCell.columnId]: value };
-      onRowUpdate(newRow, oldRow);
+    } else {
+      // Si no hay onCellUpdate, solo actualizar el estado local
+      if (onRowUpdate) {
+        const newRow = { ...oldRow, [editingCell.columnId]: value };
+        onRowUpdate(newRow, oldRow);
+      }
     }
 
     setEditingCell(null);
@@ -754,7 +772,7 @@ export default function SimpleTable<TData extends TableData = TableData>({
       const isNumericField = numericFields.has(cell.column.id);
       const isAccountField = cell.column.id === "category";
       const isAccountTypeField = cell.column.id === "subcategory";
-      const isBankField = cell.column.id === "bank";
+      const isBankField = cell.column.id === "source";
 
       // Si es la columna account, mostrar select
       if (isAccountField) {
@@ -1463,10 +1481,13 @@ export default function SimpleTable<TData extends TableData = TableData>({
                 label=""
                 options={[
                   { value: "", label: t("table.allBanks") },
-                  ...(banks || []).map((bank) => ({
-                    value: bank.value,
-                    label: bank.label,
-                  })),
+                  // Extraer bancos únicos de los datos de la tabla
+                  ...Array.from(new Set(data.map(row => row.source)))
+                    .filter(bank => bank) // Filtrar valores vacíos/null
+                    .map((bank) => ({
+                      value: bank,
+                      label: bank,
+                    })),
                 ]}
                 value={bankFilter}
                 onChange={setBankFilter}

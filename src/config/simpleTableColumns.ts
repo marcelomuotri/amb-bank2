@@ -160,7 +160,7 @@ export const baseColumns: ColumnDef<TableRowData>[] = [
     size: 12, // 12% del ancho total
   },
   {
-    id: 'bank',
+    id: 'source',
     header: 'BANK',
     accessorKey: 'source',
     size: 13, // 13% del ancho total

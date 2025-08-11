@@ -41,7 +41,12 @@ const Home = () => {
       try {
         // 1. Subir archivos al webhook
         const files = fileItems.map((item) => item.file);
-        const bankName = selectedBank;
+        
+        // Obtener el nombre del banco desde fileItems (ya tiene el nombre correcto)
+        const bankName = fileItems.length > 0 ? fileItems[0].bankName : selectedBank;
+        
+        console.log('Enviando archivos con banco:', bankName);
+        
         const batchId = await uploadFilesToWebhook(
           files,
           selectedClient,
