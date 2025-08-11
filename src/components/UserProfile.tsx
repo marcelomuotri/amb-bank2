@@ -10,9 +10,10 @@ import LogoutIcon from "@mui/icons-material/Logout";
 interface UserProfileProps {
   onExpandedChange?: (expanded: boolean) => void;
   loading?: boolean;
+  collapsed?: boolean;
 }
 
-const UserProfile: React.FC<UserProfileProps> = ({ onExpandedChange, loading = false }) => {
+const UserProfile: React.FC<UserProfileProps> = ({ onExpandedChange, loading = false, collapsed = false }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const { user } = useAuth();
@@ -60,7 +61,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onExpandedChange, loading = f
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: 10,
+          gap: collapsed ? 0 : 10,
           borderRadius: theme.shape.borderRadius,
           backgroundColor: isExpanded ? `${theme.palette.primary.main}10` : "transparent",
           transition: "all 0.2s ease",
@@ -68,6 +69,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onExpandedChange, loading = f
           "&:hover": {
             backgroundColor: loading ? "transparent" : `${theme.palette.primary.main}10`,
           },
+          justifyContent: collapsed ? "center" : "flex-start",
         }}
       >
         {loading ? (
@@ -88,59 +90,67 @@ const UserProfile: React.FC<UserProfileProps> = ({ onExpandedChange, loading = f
           </Avatar>
         )}
         
-        <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-          {loading ? (
-            <>
-              <Skeleton width="60%" height={20} />
-              <Skeleton width="80%" height={16} />
-            </>
-          ) : (
-            <>
-              <Typography
-                sx={{
-                  fontSize: "16px",
-                  fontWeight: 600,
-                  color: "#333",
-                  lineHeight: 1.2,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {user.email.split('@')[0]}
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: "14px",
-                  color: "#666",
-                  lineHeight: 1.2,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {user.email}
-              </Typography>
-            </>
-          )}
-        </Box>
+        {/* Solo mostrar texto cuando no esté colapsado */}
+        {!collapsed && (
+          <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+            {loading ? (
+              <>
+                <Skeleton width="60%" height={20} />
+                <Skeleton width="80%" height={16} />
+              </>
+            ) : (
+              <>
+                <Typography
+                  sx={{
+                    fontSize: "16px",
+                    fontWeight: 600,
+                    color: "#333",
+                    lineHeight: 1.2,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {user.email.split('@')[0]}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: "14px",
+                    color: "#666",
+                    lineHeight: 1.2,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {user.email}
+                </Typography>
+              </>
+            )}
+          </Box>
+        )}
 
-        {isExpanded ? (
-          <KeyboardArrowDownIcon
-            sx={{
-              color: "#666",
-              transition: "transform 0.2s ease",
-              opacity: loading ? 0.5 : 1,
-            }}
-          />
-        ) : (
-          <KeyboardArrowUpIcon
-            sx={{
-              color: "#666",
-              transition: "transform 0.2s ease",
-              opacity: loading ? 0.5 : 1,
-            }}
-          />
+        {/* Solo mostrar flechas cuando no esté colapsado */}
+        {!collapsed && (
+          <>
+            {isExpanded ? (
+              <KeyboardArrowDownIcon
+                sx={{
+                  color: "#666",
+                  transition: "transform 0.2s ease",
+                  opacity: loading ? 0.5 : 1,
+                }}
+              />
+            ) : (
+              <KeyboardArrowUpIcon
+                sx={{
+                  color: "#666",
+                  transition: "transform 0.2s ease",
+                  opacity: loading ? 0.5 : 1,
+                }}
+              />
+            )}
+          </>
         )}
       </Box>
 
@@ -175,18 +185,21 @@ const UserProfile: React.FC<UserProfileProps> = ({ onExpandedChange, loading = f
             "&:hover": {
               backgroundColor: "#f5f5f5",
             },
+            justifyContent: collapsed ? "center" : "flex-start",
           }}
         >
           <LogoutIcon sx={{ fontSize: 20, color: "#666" }} />
-          <Typography
-            sx={{
-              fontSize: "14px",
-              color: "#666",
-              fontWeight: 500,
-            }}
-          >
-            {t("layout.signOut")}
-          </Typography>
+          {!collapsed && (
+            <Typography
+              sx={{
+                fontSize: "14px",
+                color: "#666",
+                fontWeight: 500,
+              }}
+            >
+              {t("layout.signOut")}
+            </Typography>
+          )}
         </Box>
       </Box>
     </Box>

@@ -154,13 +154,13 @@ const Layout = () => {
           sx={{ paddingLeft: "20px", paddingRight: "18px" }}
         >
           <Menu>
-            <MenuItem rootStyles={{ paddingBottom: "20px" }}>
+            <MenuItem rootStyles={{ paddingBottom: "30px", paddingTop: "12px", display: "flex", justifyContent: "center" }}>
               {logoUrl && (
                 <img
                   src={logoUrl}
                   style={{
-                    width: collapsed ? 30 : 50,
-                    height: collapsed ? 30 : 50,
+                    width: collapsed ? 30 : 70,
+                    height: collapsed ? 30 : 70,
                     objectFit: "cover",
                     objectPosition: "top",
                     transition: "width 0.2s ease, height 0.2s ease",
@@ -199,6 +199,7 @@ const Layout = () => {
           <UserProfile
             onExpandedChange={setUserProfileExpanded}
             loading={dashboardLoading}
+            collapsed={collapsed}
           />
         </Box>
       </Sidebar>

@@ -3,7 +3,7 @@
     "download": "Download",
     "fileUpload.dragAndDrop": "Drag and drop files here",
     "fileUpload.dragAndDropSubtitle": "or click to browse (multiple files)",
-    "fileUpload.supportedFormats": "Supports: PDF, Excel, Word, Images",
+    "fileUpload.supportedFormats": "Supports: PDF, Excel, Aspx, Images",
     "layout.searchClients": "Statements",
     "layout.clients": "Clients",
     "layout.signOut": "Sign out",
