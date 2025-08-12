@@ -154,7 +154,22 @@ const Layout = () => {
           sx={{ paddingLeft: "20px", paddingRight: "18px" }}
         >
           <Menu>
-            
+            <MenuItem rootStyles={{ paddingBottom: "30px", paddingTop: "12px", display: "flex", justifyContent: "center" }}>
+              {logoUrl && (
+                <img
+                  src={logoUrl}
+                  style={{
+                    width: collapsed ? 30 : 70,
+                    height: collapsed ? 30 : 70,
+                    objectFit: "cover",
+                    objectPosition: "top",
+                    transition: "width 0.2s ease, height 0.2s ease",
+                    marginTop: "20px",
+                  }}
+                  alt="logo"
+                />
+              )}
+            </MenuItem>
             {menuItems.map(renderMenuItem)}
           </Menu>
           <Box flexGrow={1} />
